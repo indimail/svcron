@@ -19,17 +19,19 @@
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-typedef	struct _entry {
-	struct _entry	*next;
-	struct passwd	*pwd;
-	char		**envp;
-	char		*cmd;
-	bitstr_t	bit_decl(minute, MINUTE_COUNT);
-	bitstr_t	bit_decl(hour,   HOUR_COUNT);
-	bitstr_t	bit_decl(dom,    DOM_COUNT);
-	bitstr_t	bit_decl(month,  MONTH_COUNT);
-	bitstr_t	bit_decl(dow,    DOW_COUNT);
-	int		flags;
+#ifndef _STRUCTS_H
+#define _STRUCTS_H
+typedef struct _entry {
+	struct _entry  *next;
+	struct passwd  *pwd;
+	char          **envp;
+	char           *cmd;
+	bitstr_t        bit_decl(minute, MINUTE_COUNT);
+	bitstr_t        bit_decl(hour, HOUR_COUNT);
+	bitstr_t        bit_decl(dom, DOM_COUNT);
+	bitstr_t        bit_decl(month, MONTH_COUNT);
+	bitstr_t        bit_decl(dow, DOW_COUNT);
+	int             flags;
 #define	MIN_STAR	0x01
 #define	HR_STAR		0x02
 #define	DOM_STAR	0x04
@@ -39,25 +41,28 @@ typedef	struct _entry {
 #define	DONT_LOG	0x40
 } entry;
 
-			/* the crontab database will be a list of the
-			 * following structure, one element per user
-			 * plus one for the system.
-			 *
-			 * These are the crontabs.
-			 */
+/*
+ * the crontab database will be a list of the
+ * following structure, one element per user
+ * plus one for the system.
+ *
+ * These are the crontabs.
+ */
 
-typedef	struct _user {
-	struct _user	*next, *prev;	/* links */
-	char		*name;
-	struct timespec mtim;   	/* last modtime of crontab */
-	entry		*crontab;	/* this person's crontab */
+typedef struct _user {
+	struct _user   *next, *prev;	/* links */
+	char           *name;
+	struct timespec mtim;		/* last modtime of crontab */
+	entry          *crontab;	/* this person's crontab */
 } user;
 
-typedef	struct _cron_db {
-	user		*head, *tail;	/* links */
+typedef struct _cron_db {
+	user           *head, *tail;	/* links */
 	struct timespec mtim;		/* last modtime on spooldir */
 } cron_db;
-				/* in the C tradition, we only create
-				 * variables for the main program, just
-				 * extern them elsewhere.
-				 */
+/*
+ * in the C tradition, we only create
+ * variables for the main program, just
+ * extern them elsewhere.
+ */
+#endif

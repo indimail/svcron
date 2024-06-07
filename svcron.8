@@ -1,3 +1,4 @@
+.\" vim: tw=75
 .\" Copyright 1988,1990,1993,1996,2021 by Paul Vixie ("VIXIE")
 .\" Copyright (c) 2004 by Internet Systems Consortium, Inc. ("ISC")
 .\" Copyright (c) 1997,2000 by Internet Software Consortium, Inc.
@@ -14,56 +15,55 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT
 .\" OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.\" $Id: cron.8,v 1.8 2004/01/23 19:03:32 vixie Exp $
+.\" $Id: svcron.8,v 1.8 2004/01/23 19:03:32 vixie Exp $
 .\" 
-.TH CRON 8 "10 January 1996""
+.TH SCHED 8 "10 January 1996""
 .UC 4
 .SH NAME
-cron \- daemon to execute scheduled commands (Vixie Cron)
+svcron \- daemon to execute scheduled commands (based on Vixie Cron)
 .SH SYNOPSIS
-.B cron
+.B svcron
 .RB [ \-M
 .IR mailer ]
-.RB [ \-n ]
-.RB [ \-x
-.IR flag [ , ... ] ]
+.BR [ \-n ]
+
 .SH DESCRIPTION
-.I Cron
-should be started from /etc/rc or /etc/rc.local.  It will return immediately,
-so you don't need to start it with '&'.  The \-n option changes this default
-behavior causing it to run in the foreground.  This can be useful when 
-starting it out of init.
+.I svcron
+should be started as a supervised service in svscan(8). See also
+supervise(8). It starts in the foreground which is useful when starting
+using supervise(8). The \-n option changes this default behavior causing it
+to run in the background.
 .PP
-.I Cron
-searches /var/cron/tabs for crontab files which are named after accounts in
-/etc/passwd; crontabs found are loaded into memory.
-.I Cron
-also searches for /etc/crontab which is in a different format (see
+.I svcron
+searches /etc/indimail/cron/crontabs for crontab files which are named
+after accounts in /etc/passwd; crontabs found are loaded into memory.
+.I svcron
+also searches for /etc/indimail/crontab which is in a different format (see
 .IR crontab (5)).
-.I Cron
+.I svcron
 then wakes up every minute, examining all stored crontabs, checking each
 command to see if it should be run in the current minute.  When executing
 commands, any output is mailed to the owner of the crontab (or to the user
 named in the MAILTO environment variable in the crontab, if such exists).
 .PP
-The default mailer command is /usr/sbin/sendmail unless overridden with the
+The default mailer command is /usr/bin/sendmail unless overridden with the
 \-M command line option when
-.I Cron
+.I svcron
 is invoked. If exactly one %s is present this command string, it will be
-replaced by the user name of the invoking cron tab.
+replaced by the user name of the invoking crontab.
 .PP
 Additionally,
-.I cron
+.I svcron
 checks each minute to see if its spool directory's modtime (or the modtime
 on
-.IR /etc/crontab )
+.IR /etc/ndimail/crontab )
 has changed, and if it has,
-.I cron
+.I svcron
 will then examine the modtime on all crontabs and reload those which have
 changed.  Thus
-.I cron
+.I svcron
 need not be restarted whenever a crontab file is modified.  Note that the
-.IR Crontab (1)
+.IR crontab (1)
 command updates the modtime of the spool directory whenever it changes a
 crontab.
 .SS Daylight Saving Time and other time changes
@@ -80,19 +80,23 @@ jobs twice.
 .PP
 Time changes of more than 3 hours are considered to be corrections to
 the clock or timezone, and the new time is used immediately.
+
 .SH SIGNALS
-On receipt of a \s-2SIGHUP\s+2, the cron daemon will close and reopen its
-log file.  This is useful in scripts which rotate and age log files.  
-Naturally this is not relevant if cron was built to use
-.IR syslog (3).
+On receipt of a \s-2SIGHUP\s+2, the svcron daemon will close and reopen its
+log file. This is useful in scripts which rotate and age log files.  
+
 .SH CAVEATS
 In this version of
-.BR cron ,
-/etc/crontab must not be readable or writable by any user other than root.
+.BR svcron ,
+/etc/indimail/crontab must not be readable or writable by any user other than root.
 In other words, it should be mode 0600.
+
 .SH "SEE ALSO"
-.IR crontab (1),
-.IR crontab (5)
+.IR svcrontab (1),
+.IR crontab (5),
+.IR svscan (8),
+.IR supervise (8)
+
 .SH AUTHOR
 .nf
 Paul Vixie <vixie@isc.org>

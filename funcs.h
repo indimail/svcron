@@ -21,13 +21,16 @@
  */
 
 /* Notes:
- *	This file has to be included by cron.h after data structure defs.
+ *	This file has to be included by sched.h after data structure defs.
  *	We should reorg this into sections by module.
  */
 
+#ifndef _FUNCS_H
+#define _FUNCS_H
+
 void		set_cron_uid(void),
-		set_cron_cwd(void),
-		load_database(cron_db *),
+		set_cron_cwd(const char *),
+		load_database(cron_db *, char *),
 		open_logfile(void),
 		sigpipe_func(void),
 		job_add(const entry *, const user *),
@@ -35,37 +38,39 @@ void		set_cron_uid(void),
 		link_user(cron_db *, user *),
 		unlink_user(cron_db *, user *),
 		free_user(user *),
-		env_free(char **),
+		myenv_free(char **),
 		unget_char(int, FILE *),
 		free_entry(entry *),
-		acquire_daemonlock(int),
 		skip_comments(FILE *),
-		log_it(const char *, int, const char *, const char *),
-		log_close(void);
+		log_it1(const char *, int, const char *, const char *, int),
+		log_it2(const char *, int, const char *, const char *),
+		log_close(void),
+		die_nomem(char *);
+void            sigchld_reaper(char *);
 
 int		job_runqueue(void),
-		set_debug_flags(const char *),
 		get_char(FILE *),
 		get_string(char *, int, FILE *, char *),
 		swap_uids(void),
 		swap_uids_back(void),
-		load_env(char *, FILE *),
-		cron_pclose(FILE *),
+		load_env(char **, FILE *),
+		sched_pclose(FILE *),
 		glue_strings(char *, size_t, const char *, const char *, char),
 		strcmp_until(const char *, const char *, char),
 		allowed(const char *, const char *, const char *),
 		strdtb(char *),
+		get_lock(char **, const char *, const char *),
 		strcountstr(const char *, const char *);
 
 size_t		strlens(const char *, ...);
 
-char		*env_get(char *, char **),
+char		*myenv_get(char *, char **),
 		*arpadate(time_t *),
 		*mkprints(unsigned char *, unsigned int),
 		*first_word(char *, char *),
-		**env_init(void),
-		**env_copy(char **),
-		**env_set(char **, char *);
+		**myenv_init(void),
+		**myenv_copy(char **),
+		**myenv_set(char **, char *);
 
 user		*load_user(int, struct passwd *, const char *),
 		*find_user(cron_db *, const char *);
@@ -73,10 +78,12 @@ user		*load_user(int, struct passwd *, const char *),
 entry		*load_entry(FILE *, void (*)(const char *),
 			    struct passwd *, char **);
 
-FILE		*cron_popen(char *, char *, struct passwd *);
+FILE		*sched_popen(char *, char *, struct passwd *);
 
 struct passwd	*pw_dup(const struct passwd *);
 
 #ifndef HAVE_TM_GMTOFF
 long		get_gmtoff(time_t *, struct tm *);
+#endif
+
 #endif

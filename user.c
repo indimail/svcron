@@ -17,45 +17,49 @@
  */
 
 #if !defined(lint) && !defined(LINT)
-static char rcsid[] = "$Id: user.c,v 1.5 2004/01/23 18:56:43 vixie Exp $";
+static char     rcsid[] = "$Id: user.c,v 1.5 2004/01/23 18:56:43 vixie Exp $";
 #endif
 
-/* vix 26jan87 [log is in RCS file]
+/*
+ * vix 26jan87 [log is in RCS file]
  */
 
 #include "cron.h"
 
 void
-free_user(user *u) {
-	entry *e, *ne;
+free_user(user *u)
+{
+	entry          *e, *ne;
 
 	free(u->name);
-	for (e = u->crontab;  e != NULL;  e = ne) {
+	for (e = u->crontab; e != NULL; e = ne) {
 		ne = e->next;
 		free_entry(e);
 	}
 	free(u);
 }
 
-user *
-load_user(int crontab_fd, struct passwd	*pw, const char *name) {
-	char envstr[MAX_ENVSTR];
-	FILE *file;
-	user *u;
-	entry *e;
-	int status, save_errno;
-	char **envp, **tenvp;
+user           *
+load_user(int crontab_fd, struct passwd *pw, const char *name)
+{
+#if 1
+	char           *envstr;
+#else
+	char            envstr[MAX_ENVSTR];
+#endif
+	FILE           *file;
+	user           *u;
+	entry          *e;
+	int             status, save_errno;
+	char          **envp, **tenvp;
 
 	if (!(file = fdopen(crontab_fd, "r"))) {
 		perror("fdopen on crontab_fd in load_user");
 		return (NULL);
 	}
 
-	Debug(DPARS, ("load_user()\n"))
-
-	/* file is open.  build user entry, then read the crontab file.
-	 */
-	if ((u = (user *) malloc(sizeof(user))) == NULL)
+	/*- file is open.  build user entry, then read the crontab file.  */
+	if ((u = (user *) malloc(sizeof (user))) == NULL)
 		return (NULL);
 	if ((u->name = strdup(name)) == NULL) {
 		save_errno = errno;
@@ -65,9 +69,8 @@ load_user(int crontab_fd, struct passwd	*pw, const char *name) {
 	}
 	u->crontab = NULL;
 
-	/* init environment.  this will be copied/augmented for each entry.
-	 */
-	if ((envp = env_init()) == NULL) {
+	/*- init environment.  this will be copied/augmented for each entry.  */
+	if ((envp = myenv_init()) == NULL) {
 		save_errno = errno;
 		free(u->name);
 		free(u);
@@ -75,10 +78,10 @@ load_user(int crontab_fd, struct passwd	*pw, const char *name) {
 		return (NULL);
 	}
 
-	/* load the crontab
-	 */
-	while ((status = load_env(envstr, file)) >= OK) {
-		switch (status) {
+	/*- load the crontab */
+	while ((status = load_env(&envstr, file)) >= OK) {
+		switch (status)
+		{
 		case ERR:
 			free_user(u);
 			u = NULL;
@@ -91,7 +94,7 @@ load_user(int crontab_fd, struct passwd	*pw, const char *name) {
 			}
 			break;
 		case TRUE:
-			if ((tenvp = env_set(envp, envstr)) == NULL) {
+			if ((tenvp = myenv_set(envp, envstr)) == NULL) {
 				save_errno = errno;
 				free_user(u);
 				u = NULL;
@@ -103,9 +106,15 @@ load_user(int crontab_fd, struct passwd	*pw, const char *name) {
 		}
 	}
 
- done:
-	env_free(envp);
+done:
+	myenv_free(envp);
 	fclose(file);
-	Debug(DPARS, ("...load_user() done\n"))
 	return (u);
+}
+
+void
+getversion_user_c()
+{
+	const char     *x = rcsid;
+	x++;
 }

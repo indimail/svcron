@@ -18,6 +18,9 @@
 
 /* reorder these #include's at your peril */
 
+#ifndef _EXTERNS_H
+#define _EXTERNS_H
+
 #include <sys/param.h>
 #include <sys/types.h>
 #include <sys/time.h>
@@ -59,21 +62,10 @@
 # include <bsd_auth.h>
 #endif /*BSD_AUTH*/
 
-#define DIR_T	struct dirent
-#define WAIT_T	int
-#define SIG_T	sig_t
-#define TIME_T	time_t
-#define PID_T	pid_t
-
 #ifndef TZNAME_ALREADY_DEFINED
 extern char *tzname[2];
 #endif
 #define TZONE(tm) tzname[(tm).tm_isdst]
-
-#if (defined(BSD)) && (BSD >= 198606) || defined(__linux)
-# define HAVE_FCHOWN
-# define HAVE_FCHMOD
-#endif
 
 #if (defined(BSD)) && (BSD >= 199103) || defined(__linux)
 # define HAVE_SAVED_UIDS
@@ -118,4 +110,6 @@ extern	int		flock(int, int);
 
 #ifndef WCOREDUMP
 # define WCOREDUMP(st)          (((st) & 0200) != 0)
+#endif
+
 #endif

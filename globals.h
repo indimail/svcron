@@ -20,6 +20,9 @@
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#ifndef _GLOBALS_H
+#define _GLOBALS_H
+
 #ifdef MAIN_PROGRAM
 # define XTRN
 # define INIT(x) = x
@@ -61,26 +64,16 @@ XTRN const char *DowNames[]
 #endif
 	;
 
-XTRN char	*ProgramName INIT("amnesia");
-XTRN int	LineNumber INIT(0);
-XTRN time_t	StartTime INIT(0);
-XTRN char	*Mailer INIT(NULL);
-XTRN int	NoFork INIT(0);
+XTRN char      *ProgramName INIT("amnesia");
+XTRN int        LineNumber INIT(0);
+XTRN time_t     StartTime INIT(0);
+XTRN char      *Mailer INIT(NULL);
+XTRN int        DoFork INIT(0);
+XTRN int        verbose INIT(0);
 XTRN const struct timespec ts_zero 
 #ifdef MAIN_PROGRAM
 = {.tv_sec = 0, .tv_nsec = 0}
 #endif
 ;
-#if DEBUGGING
-XTRN int	DebugFlags INIT(0);
-XTRN const char *DebugFlagNames[]
-#ifdef MAIN_PROGRAM
-	= {
-		"ext", "sch", "proc", "pars", "load", "misc", "test", "bit",
-		NULL
-	}
+
 #endif
-	;
-#else
-#define	DebugFlags	0
-#endif /* DEBUGGING */

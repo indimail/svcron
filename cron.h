@@ -25,11 +25,49 @@
  * vix 30dec86 [written]
  */
 
-#define CRON_VERSION "V4.999"
+#ifndef _CRON_H
+#define _CRON_H
+
+#define SCHED_VERSION "V4.999"
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 #include "externs.h"
 #include "pathnames.h"
 #include "macros.h"
 #include "structs.h"
 #include "funcs.h"
 #include "globals.h"
+
+#define BUFSIZE_OUT 512
+#define BUFSIZE_IN  1024
+
+/*
+ * choose one of these mailer commands. some use
+ * /bin/mail for speed; it makes biff bark but doesn't
+ * do aliasing. sendmail does do aliasing but is
+ * a hog for short messages. aliasing is not needed
+ * if you make use of the MAILTO= feature in crontabs.
+ * (hint: MAILTO= was added for this reason).
+ *
+ * #define MAILFMT        "%s -d %s" */ /* -d = undocumented but common flag: deliver locally?
+ * #define MAILARG        "/bin/mail",mailto
+ * #define MAILFMT        "%s -mlrxto %s"
+ * #define MAILARG        "/usr/mmdf/bin/submit",mailto
+ * #define MAILFMT        "%s -FCronDaemon -odi -oem -oi -t"
+ * #define MAILARG        _PATH_SENDMAIL
+
+ * -Fx	 = Set full-name of sender
+ * -odi	 = Option Deliverymode Interactive
+ * -oem	 = Option Errors Mailedtosender
+ * -oi   = Ignore "." alone on a line
+ * -t    = Get recipient from headers
+ */
+#ifndef MAILFMT
+#define MAILFMT        "%s -FCronDaemon -odi -oem -oi -t"
+#endif
+#ifndef MAILARG
+#define MAILARG        _PATH_SENDMAIL
+#endif
+
+#endif

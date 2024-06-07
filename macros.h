@@ -20,11 +20,16 @@
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-	/* these are really immutable, and are
-	 *   defined for symbolic convenience only
-	 * TRUE, FALSE, and ERR must be distinct
-	 * ERR must be < OK.
-	 */
+/*
+ * these are really immutable, and are
+ * defined for symbolic convenience only 
+ * TRUE, FALSE, and ERR must be distinct
+ * ERR must be < OK.
+ */
+
+#ifndef _MACROS_H
+#define _MACROS_H
+
 #define TRUE		1
 #define FALSE		0
 	/* system calls return this on success */
@@ -33,10 +38,6 @@
 #define ERR		(-1)
 
 	/* turn this on to get '-x' code */
-#ifndef DEBUGGING
-#define DEBUGGING	FALSE
-#endif
-
 #define	INIT_PID	1	/* parent of orphans */
 #define READ_PIPE	0	/* which end of a pipe pair do you read? */
 #define WRITE_PIPE	1	/*   or write to? */
@@ -52,17 +53,6 @@
 #define	MAX_UNAME	33	/* max length of username, should be overkill */
 #define	ROOT_UID	0	/* don't change this, it really must be root */
 #define	ROOT_USER	"root"	/* ditto */
-
-				/* NOTE: these correspond to DebugFlagNames,
-				 *	defined below.
-				 */
-#define	DEXT		0x0001	/* extend flag for other debug masks */
-#define	DSCH		0x0002	/* scheduling debug mask */
-#define	DPROC		0x0004	/* process control debug mask */
-#define	DPARS		0x0008	/* parsing debug mask */
-#define	DLOAD		0x0010	/* database loading debug mask */
-#define	DMISC		0x0020	/* misc debug mask */
-#define	DTEST		0x0040	/* test mode: don't execute any commands */
 
 #define	PPC_NULL	((const char **)NULL)
 
@@ -80,20 +70,8 @@
 			while (c!='\t' && c!=' ' && c!='\n' && c != EOF) \
 				c = get_char(f);
 
-#if DEBUGGING
-# define Debug(mask, message) \
-			if ((DebugFlags & (mask)) != 0) \
-				printf message;
-#else /* !DEBUGGING */
-# define Debug(mask, message) \
-			;
-#endif /* DEBUGGING */
-
 #define	MkUpper(ch)	(islower(ch) ? toupper(ch) : ch)
-#define	Set_LineNum(ln)	{Debug(DPARS|DEXT,("linenum=%d\n",ln)); \
-			 LineNumber = ln; \
-			}
-
+#define	Set_LineNum(ln)	{ LineNumber = ln; }
 #ifdef HAVE_TM_GMTOFF
 #define	get_gmtoff(c, t)	((t)->tm_gmtoff)
 #endif
@@ -131,4 +109,6 @@
  */
 #ifndef O_NOFOLLOW
 #define O_NOFOLLOW	0
+#endif
+
 #endif

@@ -1,0 +1,6 @@
+#!/bin/sh
+./configure --prefix=/usr \
+	--enable-crondir=/etc/indimail/cron \
+	--enable-spooldir=crontabs \
+	--enable-syscrondir=/etc/indimail/cron/cron.d \
+	--enable-syscrontab=/etc/indimail/cron/crontab

@@ -1,0 +1,86 @@
+%undefine _missing_build_ids_terminate_build
+%global _unpackaged_files_terminate_build 1
+
+%if %{defined _project}
+# define if building on openSUSE build service
+%global build_on_obs       1
+%else
+%define _project           local
+%global build_on_obs       0
+%global _hardened_build    1
+%endif
+
+%global xxxxbug            1
+%if %{defined nodebug}
+%global debug_package      %{nil}
+%endif
+%global mandir             /usr/share/man
+
+%if 0%{?suse_version}
+%global dist suse
+%global disttag suse
+%endif
+
+%if 0%{?fedora_version}
+%global dist %{?dist}
+%global disttag fedora
+%endif
+
+Summary: Utilities for Safe Banking
+Name: svcron
+Version: @version@
+Release: @release@%{?dist}
+%if %build_on_obs == 1
+License: GPL-3.0+
+%else
+License: GPLv3
+%endif
+Group: System Environment/Base
+Requires: rpm
+BuildRequires: gcc libqmail
+Source0: http://downloads.sourceforge.net/indimail/%{name}-%{version}.tar.gz
+URL: https://github.com/indimail/svcron
+
+%description
+cron is a daemon that runs specified programs at scheduled times. This
+package contains Paul Vixie's implementation of cron
+
+%prep
+%setup -q
+
+%build
+%configure --prefix=%{_prefix} \
+	--enable-crondir=/etc/indimail/cron \
+	--enable-spooldir=crontabs \
+	--enable-syscrondir=/etc/indimail/cron/cron.d \
+	--enable-syscrontab=/etc/indimail/cron/crontab \
+	--mandir=%{mandir}
+
+%install
+%{__make} %{?_smp_mflags}
+%if %{defined nodebug}
+  %{__make} %{?_smp_mflags} DESTDIR=%{buildroot} install-strip
+%else
+  %{__make} %{?_smp_mflags} DESTDIR=%{buildroot} install
+%endif
+%if %{undefined nodebug}
+  /bin/chmod -R 755 %{buildroot}%{_prefix}/bin
+%endif
+
+%files
+%defattr(-, root, root,-)
+%doc %attr(644,root,root)               %{mandir}/man1/*
+%doc %attr(644,root,root)               %{mandir}/man5/*
+%doc %attr(644,root,root)               %{mandir}/man8/*
+%attr(755,root,root)                    %{_prefix}/sbin/svcron
+%attr(755,root,root)                    %{_prefix}/bin/svcrontab
+
+%if %build_on_obs == 0
+%license %attr(0644,root,root)          %{_prefix}/share/doc/%{name}/LICENSE
+%else
+%attr(0644,root,root)                   %{_prefix}/share/doc/%{name}/LICENSE
+%endif
+%attr(0644,root,root)                   %{_prefix}/share/doc/%{name}/AUTHORS
+%attr(0644,root,root)                   %{_prefix}/share/doc/%{name}/ChangeLog
+
+%changelog

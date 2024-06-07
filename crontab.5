@@ -1,3 +1,4 @@
+.\" vim: tw=75
 .\" Copyright (c) 1988,1990,1993,1994,2021 by Paul Vixie ("VIXIE")
 .\" Copyright (c) 2004 by Internet Systems Consortium, Inc. ("ISC")
 .\" Copyright (c) 1997,2000 by Internet Software Consortium, Inc.
@@ -19,27 +20,24 @@
 .TH CRONTAB 5 "24 January 1994"
 .UC 4
 .SH NAME
-crontab \- tables for driving cron (Vixie Cron)
+crontab \- tables for driving svcron (based on Vixie Cron)
 .SH DESCRIPTION
 A
 .I crontab
 file contains instructions to the
-.IR cron (8)
+.IR svcron (8)
 daemon of the general form: ``run this command at this time on this date''.
 Each user has their own crontab, and commands in any given crontab will be
-executed as the user who owns the crontab.  Uucp and News will usually have
-their own crontabs, eliminating the need for explicitly running
-.IR su (1)
-as part of a cron command.
+executed as the user who owns the crontab.
 .PP
-Blank lines and leading spaces and tabs are ignored.  Lines whose first
+Blank lines and leading spaces and tabs are ignored. Lines whose first
 non-space character is a pound-sign (#) are comments, and are ignored.
-Note that comments are not allowed on the same line as cron commands, since
+Note that comments are not allowed on the same line as svcron commands, since
 they will be taken to be part of the command.  Similarly, comments are not
 allowed on the same line as environment variable settings.
 .PP
-An active line in a crontab will be either an environment setting or a cron
-command.  An environment setting is of the form,
+An active line in a crontab will be either an environment setting or a svcron
+command. An environment setting is of the form,
 .PP
     name = value
 .PP
@@ -55,7 +53,7 @@ leading or trailing blanks.
 .PP
 Several environment variables are set up
 automatically by the
-.IR cron (8)
+.IR svcron (8)
 daemon.
 SHELL is set to /bin/sh, and LOGNAME and HOME are set from the /etc/passwd 
 line of the crontab's owner.
@@ -65,26 +63,26 @@ HOME and SHELL may be overridden by settings in the crontab; LOGNAME may not.
 on these systems, USER will be set also.)
 .PP
 In addition to LOGNAME, HOME, and SHELL,
-.IR cron (8)
+.IR svcron (8)
 will look at MAILTO if it has any reason to send mail as a result of running
 commands in ``this'' crontab.  If MAILTO is defined (and non-empty), mail is
 sent to the user so named.  If MAILTO is defined but empty (MAILTO=""), no
 mail will be sent.  Otherwise mail is sent to the owner of the crontab.  This
 option is useful if you decide on /bin/mail instead of /usr/lib/sendmail as
-your mailer when you install cron -- /bin/mail doesn't do aliasing, and UUCP
+your mailer when you install svcron -- /bin/mail doesn't do aliasing, and UUCP
 usually doesn't read its mail.
 .PP
-The format of a cron command is very much the V7 standard, with a number of
+The format of a svcron command is very much the V7 standard, with a number of
 upward-compatible extensions.  Each line has five time and date fields,
 followed by a user name if this is the system crontab file,
 followed by a command.  Commands are executed by
-.IR cron (8)
+.IR svcron (8)
 when the minute, hour, and month of year fields match the current time,
 .I and
 when at least one of the two day fields (day of month, or day of week)
 match the current time (see ``Note'' below).
-.IR cron (8)
-examines cron entries once every minute.
+.IR svcron (8)
+examines svcron entries once every minute.
 The time and date fields are:
 .IP
 .ta 1.5i
@@ -129,7 +127,7 @@ The ``sixth'' field (the rest of the line) specifies the command to be
 run.
 The entire command portion of the line, up to a newline or %
 character, will be executed by /bin/sh or by the shell
-specified in the SHELL variable of the cronfile.
+specified in the SHELL variable of the crontab file.
 Percent-signs (%) in the command, unless escaped with backslash
 (\\), will be changed into newline characters, and all data
 after the first % will be sent to the command as standard
@@ -147,7 +145,7 @@ month, plus every Friday.
 .PP
 Note: The day-of-month can be given as $, in which case it matches
 the last day of the current month.
-.SH EXAMPLE CRON FILE
+.SH EXAMPLE SCHEDTAB FILE
 .nf
 # use /bin/sh to run commands, no matter what /etc/passwd says
 SHELL=/bin/sh
@@ -163,8 +161,10 @@ MAILTO=paul
 23 0-23/2 * * * echo "run 23 minutes after midn, 2am, 4am ..., everyday"
 5 4 * * sun     echo "run at 5 after 4 every sunday"
 .fi
+
 .SH SEE ALSO
-cron(8), crontab(1)
+svcron(8), svcrontab(1)
+
 .SH EXTENSIONS
 When specifying day of week, both day 0 and day 7 will be considered Sunday.
 BSD and ATT seem to disagree about this.

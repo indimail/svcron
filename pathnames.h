@@ -24,82 +24,87 @@
 #define _PATHNAMES_H_
 
 #if (defined(BSD)) && (BSD >= 199103) || defined(__linux) || defined(AIX)
-# include <paths.h>
+#include <paths.h>
 #endif /*BSD*/
 
 #ifndef CRONDIR
-			/* CRONDIR is where cron(8) and crontab(1) both chdir
-			 * to; SPOOL_DIR, CRON_ALLOW, CRON_DENY, and LOG_FILE
-			 * are all relative to this directory.
-			 */
-#define CRONDIR		"/var/cron"
+/* CRONDIR is where sched(8) and crontab(1) both chdir
+ * to; SPOOL_DIR, SCHED_ALLOW, SCHED_DENY, and LOG_FILE
+ * are all relative to this directory.
+ */
+#define CRONDIR   "/var/sched"
 #endif
 
-			/* SPOOLDIR is where the crontabs live.
-			 * This directory will have its modtime updated
-			 * whenever crontab(1) changes a crontab; this is
-			 * the signal for cron(8) to look at each individual
-			 * crontab file and reload those whose modtimes are
-			 * newer than they were last time around (or which
-			 * didn't exist last time around...)
-			 */
-#define SPOOL_DIR	"tabs"
-
-			/* cron allow/deny file.  At least cron.deny must
-			 * exist for ordinary users to run crontab.
-			 */
-#define	CRON_ALLOW	"cron.allow"
-#define	CRON_DENY	"cron.deny"
-
-			/* undefining this turns off logging to a file.  If
-			 * neither LOG_FILE or SYSLOG is defined, we don't log.
-			 * If both are defined, we log both ways.  Note that if
-			 * LOG_CRON is defined by <syslog.h>, LOG_FILE will not
-			 * be used.
-			 */
-#define LOG_FILE	"log"
-
-			/* where should the daemon stick its PID?
-			 * PIDDIR must end in '/'.
-			 */
-#ifdef _PATH_VARRUN
-# define PIDDIR	_PATH_VARRUN
-#else
-# define PIDDIR "/etc/"
+/* SPOOLDIR is where the crontabs live.
+ * This directory will have its modtime updated
+ * whenever crontab(1) changes a crontab; this is
+ * the signal for sched(8) to look at each individual
+ * crontab file and reload those whose modtimes are
+ * newer than they were last time around (or which
+ * didn't exist last time around...)
+ */
+#ifndef SPOOL_DIR
+#define SPOOL_DIR     "crontabs"
 #endif
-#define PIDFILE		"cron.pid"
-#define _PATH_CRON_PID	PIDDIR PIDFILE
 
-			/* 4.3BSD-style crontab */
-#define SYSCRONTAB	"/etc/crontab"
+/*
+ * sched allow/deny file.  At least sched.deny must
+ * exist for ordinary users to run crontab.
+ */
+#define CRON_ALLOW "cron.allow"
+#define CRON_DENY  "cron.deny"
 
-			/* what editor to use if no EDITOR or VISUAL
-			 * environment variable specified.
-			 */
+/* undefining this turns off logging to a file.  If
+ * neither LOG_FILE or SYSLOG is defined, we don't log.
+ * If both are defined, we log both ways.  Note that if
+ * LOG_CRON is defined by <syslog.h>, LOG_FILE will not
+ * be used.
+ */
+#define LOG_FILE ".log"
+
+/*
+ * where should the daemon stick its PID?
+ * PIDDIR must end in '/'.
+ */
+#define PIDFILE          "crond.pid"
+
+#ifndef SYS_CROND_DIR
+#define SYS_CROND_DIR    "/etc/indimail/cron.d"
+#endif
+
+/* 4.3BSD-style crontab */
+#ifndef SYSCRONTAB
+#define SYSCRONTAB       "/etc/indimail/crontabs"
+#endif
+
+/*
+ * what editor to use if no EDITOR or VISUAL
+ * environment variable specified.
+ */
 #if defined(_PATH_VI)
-# define EDITOR _PATH_VI
+#define EDITOR _PATH_VI
 #else
-# define EDITOR "/usr/ucb/vi"
+#define EDITOR "/usr/bin/vi"
 #endif
 
 #ifndef _PATH_SENDMAIL
-# define _PATH_SENDMAIL "/usr/lib/sendmail"
+#define _PATH_SENDMAIL "/usr/bin/sendmail"
 #endif
 
 #ifndef _PATH_BSHELL
-# define _PATH_BSHELL "/bin/sh"
+#define _PATH_BSHELL "/bin/sh"
 #endif
 
 #ifndef _PATH_DEFPATH
-# define _PATH_DEFPATH "/usr/bin:/bin"
+#define _PATH_DEFPATH "/usr/bin:/bin"
 #endif
 
 #ifndef _PATH_TMP
-# define _PATH_TMP "/tmp"
+#define _PATH_TMP "/tmp/"
 #endif
 
 #ifndef _PATH_DEVNULL
-# define _PATH_DEVNULL "/dev/null"
+#define _PATH_DEVNULL "/dev/null"
 #endif
 
 #endif /* _PATHNAMES_H_ */

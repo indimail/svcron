@@ -17,14 +17,16 @@
  */
 
 #if !defined(lint) && !defined(LINT)
-static char rcsid[] = "$Id: env.c,v 1.10 2004/01/23 18:56:42 vixie Exp $";
+static char     rcsid[] = "$Id: env.c,v 1.10 2004/01/23 18:56:42 vixie Exp $";
 #endif
 
+#include <stralloc.h>
 #include "cron.h"
 
-char **
-env_init(void) {
-	char **p = (char **) malloc(sizeof(char **));
+char          **
+myenv_init(void)
+{
+	char          **p = (char **) malloc(sizeof (char **));
 
 	if (p != NULL)
 		p[0] = NULL;
@@ -32,22 +34,23 @@ env_init(void) {
 }
 
 void
-env_free(char **envp) {
-	char **p;
+myenv_free(char **envp)
+{
+	char          **p;
 
 	for (p = envp; *p != NULL; p++)
 		free(*p);
 	free(envp);
 }
 
-char **
-env_copy(char **envp) {
-	int count, i, save_errno;
-	char **p;
+char          **
+myenv_copy(char **envp)
+{
+	int             count, i, save_errno;
+	char          **p;
 
-	for (count = 0; envp[count] != NULL; count++)
-		NULL;
-	p = (char **) malloc((count+1) * sizeof(char *));  /* 1 for the NULL */
+	for (count = 0; envp[count] != NULL; count++);
+	p = (char **) malloc((count + 1) * sizeof (char *));	/* 1 for the NULL */
 	if (p != NULL) {
 		for (i = 0; i < count; i++)
 			if ((p[i] = strdup(envp[i])) == NULL) {
@@ -63,12 +66,13 @@ env_copy(char **envp) {
 	return (p);
 }
 
-char **
-env_set(char **envp, char *envstr) {
-	int count, found;
-	char **p, *envtmp;
+char          **
+myenv_set(char **envp, char *envstr)
+{
+	int             count, found;
+	char          **p, *envtmp;
 
-	/*
+	/*-
 	 * count the number of elements, including the null pointer;
 	 * also set 'found' to -1 or index of entry if already in here.
 	 */
@@ -77,10 +81,10 @@ env_set(char **envp, char *envstr) {
 		if (!strcmp_until(envp[count], envstr, '='))
 			found = count;
 	}
-	count++;	/* for the NULL */
+	count++;					/* for the NULL */
 
 	if (found != -1) {
-		/*
+		/*-
 		 * it exists already, so just free the existing setting,
 		 * save our new one there, and return the existing array.
 		 */
@@ -98,63 +102,68 @@ env_set(char **envp, char *envstr) {
 	 */
 	if ((envtmp = strdup(envstr)) == NULL)
 		return (NULL);
-	p = (char **) realloc((void *) envp,
-			      (size_t) ((count+1) * sizeof(char **)));
+	p = (char **) realloc((void *) envp, (size_t) ((count + 1) * sizeof (char **)));
 	if (p == NULL) {
 		free(envtmp);
 		return (NULL);
 	}
-	p[count] = p[count-1];
-	p[count-1] = envtmp;
+	p[count] = p[count - 1];
+	p[count - 1] = envtmp;
 	return (p);
 }
 
-/* The following states are used by load_env(), traversed in order: */
+/*
+ * The following states are used by load_env(), traversed in order: 
+ */
 enum env_state {
-	NAMEI,		/* First char of NAME, may be quote */
-	NAME,		/* Subsequent chars of NAME */
-	EQ1,		/* After end of name, looking for '=' sign */
-	EQ2,		/* After '=', skipping whitespace */
-	VALUEI,		/* First char of VALUE, may be quote */
-	VALUE,		/* Subsequent chars of VALUE */
-	FINI,		/* All done, skipping trailing whitespace */
-	ERROR,		/* Error */
+	NAMEI,						/* First char of NAME, may be quote */
+	NAME,						/* Subsequent chars of NAME */
+	EQ1,						/* After end of name, looking for '=' sign */
+	EQ2,						/* After '=', skipping whitespace */
+	VALUEI,						/* First char of VALUE, may be quote */
+	VALUE,						/* Subsequent chars of VALUE */
+	FINI,						/* All done, skipping trailing whitespace */
+	ERROR,						/* Error */
 };
 
-/* return	ERR = end of file
- *		FALSE = not an env setting (file was repositioned)
- *		TRUE = was an env setting
+/*
+ * return   ERR = end of file
+ *   FALSE = not an env setting (file was repositioned)
+ *   TRUE = was an env setting
  */
 int
-load_env(char *envstr, FILE *f) {
-	long filepos;
-	int fileline;
-	enum env_state state;
-	char name[MAX_ENVSTR], val[MAX_ENVSTR];
-	char quotechar, *c, *str;
+load_env(char **envstr, FILE *f)
+{
+	long            filepos;
+	int             fileline;
+	enum env_state  state;
+	char            name[MAX_ENVSTR], val[MAX_ENVSTR], tmp[MAX_ENVSTR];
+	static stralloc env_t = { 0 };
+	char            quotechar;
+	char           *c, *str;
 
+	*envstr = "\0";
 	filepos = ftell(f);
 	fileline = LineNumber;
 	skip_comments(f);
-	if (EOF == get_string(envstr, MAX_ENVSTR, f, "\n"))
+	if (EOF == get_string(tmp, MAX_ENVSTR, f, "\n"))
 		return (ERR);
-
-	Debug(DPARS, ("load_env, read <%s>\n", envstr))
+	c = tmp;
 
 	bzero(name, sizeof name);
 	bzero(val, sizeof val);
 	str = name;
 	state = NAMEI;
 	quotechar = '\0';
-	c = envstr;
 	while (state != ERROR && *c) {
-		switch (state) {
+		switch (state)
+		{
 		case NAMEI:
 		case VALUEI:
 			if (*c == '\'' || *c == '"')
 				quotechar = *c++;
 			state++;
-			/* FALLTHROUGH */
+			/*- FALLTHROUGH */
 		case NAME:
 		case VALUE:
 			if (quotechar) {
@@ -169,7 +178,7 @@ load_env(char *envstr, FILE *f) {
 				}
 			} else {
 				if (state == NAME) {
-					if (isspace((unsigned char)*c)) {
+					if (isspace((unsigned char) *c)) {
 						c++;
 						state++;
 						break;
@@ -189,7 +198,7 @@ load_env(char *envstr, FILE *f) {
 				str = val;
 				quotechar = '\0';
 			} else {
-				if (!isspace((unsigned char)*c))
+				if (!isspace((unsigned char) *c))
 					state = ERROR;
 			}
 			c++;
@@ -197,7 +206,7 @@ load_env(char *envstr, FILE *f) {
 
 		case EQ2:
 		case FINI:
-			if (isspace((unsigned char)*c))
+			if (isspace((unsigned char) *c))
 				c++;
 			else
 				state++;
@@ -208,40 +217,48 @@ load_env(char *envstr, FILE *f) {
 		}
 	}
 	if (state != FINI && !(state == VALUE && !quotechar)) {
-		Debug(DPARS, ("load_env, not an env var, state = %d\n", state))
 		fseek(f, filepos, 0);
-		Set_LineNum(fileline);
+		Set_LineNum(fileline)
 		return (FALSE);
 	}
 	if (state == VALUE) {
-		/* End of unquoted value: trim trailing whitespace */
+		/*- End of unquoted value: trim trailing whitespace */
 		c = val + strlen(val);
-		while (c > val && isspace((unsigned char)c[-1]))
+		while (c > val && isspace((unsigned char) c[-1]))
 			*(--c) = '\0';
 	}
 
-	/* 2 fields from parser; looks like an env setting */
-
 	/*
-	 * This can't overflow because get_string() limited the size of the
-	 * name and val fields.  Still, it doesn't hurt to be careful...
+	 * 2 fields from parser; looks like an env setting 
 	 */
-	if (!glue_strings(envstr, MAX_ENVSTR, name, val, '='))
-		return (FALSE);
-	Debug(DPARS, ("load_env, <%s> <%s> -> <%s>\n", name, val, envstr))
+
+	if (!stralloc_copys(&env_t, name) ||
+			!stralloc_append(&env_t, "=") ||
+			!stralloc_cats(&env_t, val) ||
+			!stralloc_0(&env_t))
+		die_nomem("env: ");
+	*envstr = env_t.s;
 	return (TRUE);
 }
 
-char *
-env_get(char *name, char **envp) {
-	int len = strlen(name);
-	char *p, *q;
+char           *
+myenv_get(char *name, char **envp)
+{
+	int             len = strlen(name);
+	char           *p, *q;
 
 	while ((p = *envp++) != NULL) {
 		if (!(q = strchr(p, '=')))
 			continue;
 		if ((q - p) == len && !strncmp(p, name, len))
-			return (q+1);
+			return (q + 1);
 	}
 	return (NULL);
+}
+
+void
+getversion_env_c()
+{
+	const char     *x = rcsid;
+	x++;
 }

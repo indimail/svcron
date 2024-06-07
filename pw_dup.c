@@ -43,13 +43,14 @@ static char rcsid[] = "$Id: pw_dup.c,v 1.2 2004/01/23 18:56:43 vixie Exp $";
 #include <stdio.h>
 #include <string.h>
 
-#include "config.h"
-
 struct passwd *
 pw_dup(const struct passwd *pw) {
 	char		*cp;
-	size_t		 nsize, psize, csize, gsize, dsize, ssize, total;
+	size_t		 nsize, psize, gsize, dsize, ssize, total;
 	struct passwd	*newpw;
+#ifdef LOGIN_CAP
+	size_t       csize;
+#endif
 
 	/* Allocate in one big chunk for easy freeing */
 	total = sizeof(struct passwd);
@@ -124,5 +125,11 @@ pw_dup(const struct passwd *pw) {
 
 	return (newpw);
 }
-
 #endif /* !OpenBSD || OpenBSD < 200105 */
+
+void
+getversion_pw_dup_c()
+{
+	const char *x = rcsid;
+	x++;
+}

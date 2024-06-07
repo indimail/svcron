@@ -10,33 +10,16 @@
 <br>
 <br>
 
-[![Button Features]][Features]  
-[![Button Configure]][Configure]  
-[![Button Conversion]][Conversion]
-
-[![Button Changes]][Changes]  
-[![Button Mails]][Mails]  
-[![Button Thanks]][Thanks]
-  
-<br>
-<br>
-
 This version of **Cron** is functionally based on <br>
 **System V**'s implementation and thus allows <br>
 every user to have their own **CronTab** file.
 
 </div>
 
-[<img height = 1000 width = 28% align = left  src = './Resources/Space.svg' >][#]
-[<img height = 1000 width = 28% align = right src = './Resources/Space.svg' >][#]
-
-<br>
-<br>
-
-## 📑  Tabs
+## 📑  Crontabs
 
 All crontab files are stored in a read  
-protected folders at  `/var/cron/tabs` 
+protected folders at  `/var/spool/cron/crontabs` 
 
 <br>
 
@@ -60,7 +43,7 @@ command that is run by a CronTab.
 
 You can control access to the  `crontab`  
 command by utilizing the  `allow`  and  
-`deny`  files in  `/var/cron`
+`deny`  files in  `/var/spool/cron`
 
 *The command is used to install crontabs.*
 
@@ -89,10 +72,3 @@ has gone into making porting to it easier.
 
 
 <!-------------------------------{ Buttons }----------------------------------->
-
-[Button Conversion]: https://img.shields.io/badge/Conversion-00B0B9?style=for-the-badge&logo=GitExtensions&logoColor=white
-[Button Configure]: https://img.shields.io/badge/Configure-31A8FF?style=for-the-badge&logo=WindowsTerminal&logoColor=white
-[Button Features]: https://img.shields.io/badge/Features-68BC71?style=for-the-badge&logo=AddThis&logoColor=white
-[Button Changes]: https://img.shields.io/badge/Changelog-66459B?style=for-the-badge&logo=Git&logoColor=white
-[Button Thanks]: https://img.shields.io/badge/Credits-d74078?style=for-the-badge&logo=GitHubSponsors&logoColor=white
-[Button Mails]: https://img.shields.io/badge/Mail_Archive-yellow?style=for-the-badge&logo=GMail&logoColor=white

@@ -14,28 +14,28 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT
 .\" OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.\" $Id: crontab.1,v 1.7 2004/01/23 19:03:32 vixie Exp $
+.\" $Id: svcrontab.1,v 1.7 2004/01/23 19:03:32 vixie Exp $
 .\"
-.TH CRONTAB 1 "29 December 1993"
+.TH SCHEDTAB 1 "29 December 1993"
 .UC 4
 .SH NAME
-crontab \- maintain crontab files for individual users (Vixie Cron)
+svcrontab \- maintain svcrontab files for individual users (based on Vixie Cron)
 .SH SYNOPSIS
-.B crontab
+.B svcrontab
 .RB [ -u
 .IR user ] " file"
 .br
-.B crontab
+.B svcrontab
 .RB [ -u
 .IR user ]
 .RB [ -l " | " -r " | " -e ]
 .SH DESCRIPTION
-.I Crontab
+.I svcrontab
 is the program used to install, deinstall or list the tables
 used to drive the
-.IR cron (8)
-daemon in Vixie Cron.  Each user can have their own crontab, and though
-these are files in /var, they are not intended to be edited directly.
+.IR svcron (8)
+daemon. Each user can have their own crontab, and though
+these are files in /etc/indimail/cron, they are not intended to be edited directly.
 .PP
 If the
 .I cron.allow
@@ -51,48 +51,48 @@ only the super user will be allowed to use this command.
 .PP
 If the
 .I -u
-option is given, it specifies the name of the user whose crontab is to be
+option is given, it specifies the name of the user whose svcrontab is to be
 tweaked.  If this option is not given,
-.I crontab
-examines "your" crontab, i.e., the crontab of the person executing the
+.I svcrontab
+examines "your" svcrontab, i.e., the svcrontab of the person executing the
 command.  Note that
 .IR su (8)
 can confuse
-.I crontab
+.I svcrontab
 and that if you are running inside of
 .IR su (8)
 you should always use the
 .I -u
 option for safety's sake.
 .PP
-The first form of this command is used to install a new crontab from some
+The first form of this command is used to install a new svcrontab from some
 named file or standard input if the pseudo-filename ``-'' is given.
 .PP
 The
 .I -l
-option causes the current crontab to be displayed on standard output.
+option causes the current svcrontab to be displayed on standard output.
 .PP
 The
 .I -r
-option causes the current crontab to be removed.
+option causes the current svcrontab to be removed.
 .PP
 The
 .I -e
-option is used to edit the current crontab using the editor specified by
+option is used to edit the current svcrontab using the editor specified by
 the \s-1VISUAL\s+1 or \s-1EDITOR\s+1 environment variables.  After you exit
-from the editor, the modified crontab will be installed automatically.
+from the editor, the modified svcrontab will be installed automatically.
 .SH "SEE ALSO"
-crontab(5), cron(8)
+svcrontab(5), svcron(8)
 .SH FILES
 .nf
-/var/cron/cron.allow
-/var/cron/cron.deny
+/etc/indimail/cron/cron.allow
+/etc/indimail/cron/cron.deny
 .fi
 .SH STANDARDS
 The
-.I crontab
-command conforms to IEEE Std1003.2-1992 (``POSIX'').  This new command syntax
-differs from previous versions of Vixie Cron, as well as from the classic
+.I svcrontab
+command conforms to IEEE Std1003.2-1992 (``POSIX''). This new command syntax
+differs from previous versions of Vixie cron, as well as from the classic
 SVR3 syntax.
 .SH DIAGNOSTICS
 A fairly informative usage message appears if you run it with a bad command
