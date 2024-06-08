@@ -31,12 +31,13 @@ static char     rcsid[] = "$Id: misc.c,v 1.16 2004/01/23 18:56:43 vixie Exp $";
 #include <error.h>
 #include <qprintf.h>
 #include <fmt.h>
+#include <lock.h>
 #include <qprintf.h>
 #include <sys/ipc.h>
 #include "cron.h"
 
-#define FATAL "sched: fatal: "
-#define WARN  "sched: warn: "
+#define FATAL "svcron: fatal: "
+#define WARN  "svcron: warn: "
 
 /*-
  * glue_strings is the overflow-safe equivalent of
@@ -201,7 +202,7 @@ set_cron_cwd(const char *ident)
 }
 
 /*
- * get_lock() - write our PID into /var/run/sched.pid, unless
+ * get_lock() - write our PID into /var/run/svcron.pid, unless
  * another daemon is already running, which we detect here.
  *
  * note: main() calls us twice; once before forking, once after.
@@ -221,16 +222,16 @@ get_lock(char **pidfile, const char *sdir, const char *dbdir)
 
 	if (!access(run_dir = "/run", F_OK)) {
 		if (!dbdir)
-			*pidfile = "/run/sched/"PIDFILE;
-		if (access("/run/sched", F_OK) && mkdir("/run/sched", 01777) == -1)
-			strerr_die2sys(111, FATAL, "unable to mkdir /run/sched: ");
+			*pidfile = "/run/svcron/"PIDFILE;
+		if (access("/run/svcron", F_OK) && mkdir("/run/svcron", 01777) == -1)
+			strerr_die2sys(111, FATAL, "unable to mkdir /run/svcron: ");
 		run_dir = "/run";
 	} else
 	if (!access(run_dir = "/var/run", F_OK)) {
 		if (!dbdir)
-			*pidfile = "/var/run/sched/"PIDFILE;
-		if (access("/var/run/sched", F_OK) && mkdir("/var/run/sched", 01777) == -1)
-			strerr_die2sys(111, FATAL, "unable to mkdir /var/run/sched: ");
+			*pidfile = "/var/run/svcron/"PIDFILE;
+		if (access("/var/run/svcron", F_OK) && mkdir("/var/run/svcron", 01777) == -1)
+			strerr_die2sys(111, FATAL, "unable to mkdir /var/run/svcron: ");
 	} else {
 		run_dir = "/tmp";
 		if (!dbdir)
@@ -239,7 +240,7 @@ get_lock(char **pidfile, const char *sdir, const char *dbdir)
 	if (dbdir) {
 		if (!(dir = ftok(dbdir, 1)))
 			strerr_die4sys(111, FATAL, "unable to get ftok for ", dbdir, ": ");
-		if (!qsprintf(&d, "%s/sched/%x.pid", run_dir, dir))
+		if (!qsprintf(&d, "%s/svcron/%x.pid", run_dir, dir))
 			die_nomem(FATAL);
 		*pidfile = d.s;
 	}
@@ -298,7 +299,7 @@ get_lock(char **pidfile, const char *sdir, const char *dbdir)
 			strerr_die2sys(111, FATAL, "unable to delete lock: ");
 		return (1);
 	}
-	if ((n = read(fd, buf, 7)) != 6) { /*- non-sched process is running with this pid */
+	if ((n = read(fd, buf, 7)) != 6) { /*- non-svcron process is running with this pid */
 		close(fd);
 		if (fchdir(fdsource) == -1)
 			strerr_die4sys(111, FATAL, "unable to switch back to ", sdir, ": ");
@@ -309,7 +310,7 @@ get_lock(char **pidfile, const char *sdir, const char *dbdir)
 	}
 	close(fd);
 	if (buf[0] == 's' && buf[1] == 'c' && buf[2] == 'h' &&
-		buf[3] == 'e' && buf[4] == 'd' && buf[5] == '\n') { /*- indeed pid is sched process */
+		buf[3] == 'e' && buf[4] == 'd' && buf[5] == '\n') { /*- indeed pid is svcron process */
 		buf[5] = 0;
 		strerr_warn5(FATAL, "[", buf, "] ", "already running", 0);
 		_exit (111);
@@ -485,18 +486,20 @@ static int LogFD = ERR;
 void
 log_it2(const char *username, pid_t xpid, const char *event, const char *detail)
 {
-	int             isallowed;
 	pid_t           pid = xpid;
 	static stralloc msg = {0};
 	time_t          now = time((time_t) 0);
 	struct          tm *t = localtime(&now);
 
 	if (LogFD < OK) {
-		LogFD = open(LOG_FILE, O_WRONLY|O_APPEND|O_CREAT, 0600);
+		LogFD = open(LOG_FILE, O_CREAT|O_WRONLY|O_APPEND, 0600);
 		if (LogFD < OK)
 			strerr_die4sys(111, WARN, "can't open log file ", LOG_FILE, ": ");
 		else
 			(void) fcntl(LogFD, F_SETFD, 1);
+		strerr_warn2(WARN, "waiting for lock", 0);
+		if (lock_ex(LogFD) == -1)
+			strerr_die4sys(111, FATAL, "unable to lock ", LOG_FILE, ": ");
 	}
 
 	/*-
@@ -505,7 +508,7 @@ log_it2(const char *username, pid_t xpid, const char *event, const char *detail)
 	 * to the log file.
 	 */
 	qsprintf(&msg, "%s (%02d-%02d-%04d-%02d:%02d:%02d-%d) %s (%s)\n",
-			username, t->tm_mday, t->tm_mon+1, t->tm_year,
+			username, t->tm_mday, t->tm_mon+1, t->tm_year + 1900,
 			t->tm_hour, t->tm_min, t->tm_sec, pid, event, detail);
 
 	/*- we have to run strlen() because sprintf() returns (char*) on old BSD */

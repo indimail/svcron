@@ -58,7 +58,7 @@ static pid_t *pids;
 static int fds;
 
 FILE *
-sched_popen(char *program, char *type, struct passwd *pw) {
+svcron_popen(char *program, char *type, struct passwd *pw) {
 	char *cp;
 	FILE *iop;
 	int argc, pdes[2];
@@ -151,7 +151,7 @@ sched_popen(char *program, char *type, struct passwd *pw) {
 }
 
 int
-sched_pclose(FILE *iop) {
+svcron_pclose(FILE *iop) {
 	int fdes;
 	pid_t pid;
 	int status;

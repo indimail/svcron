@@ -1,0 +1,89 @@
+.\" vim: tw=75
+.\" Copyright 1988,1990,1993,1996,2021 by Paul Vixie ("VIXIE")
+.\" Copyright (c) 2004 by Internet Systems Consortium, Inc. ("ISC")
+.\" Copyright (c) 1997,2000 by Internet Software Consortium, Inc.
+.\"
+.\" Permission to use, copy, modify, and distribute this software for any
+.\" purpose with or without fee is hereby granted, provided that the above
+.\" copyright notice and this permission notice appear in all copies.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS" AND VIXIE DISCLAIMS ALL WARRANTIES
+.\" WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+.\" MERCHANTABILITY AND FITNESS.  IN NO EVENT SHALL VIXIE BE LIABLE FOR
+.\" ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+.\" WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+.\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT
+.\" OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+.\"
+.\" $Id: svcron.8,v 1.8 2004/01/23 19:03:32 vixie Exp $
+.\" 
+.TH SCHED 8 "10 January 1996""
+.UC 4
+.SH NAME
+svcron \- daemon to execute scheduled commands (based on Vixie Cron)
+.SH SYNOPSIS
+\fBsvcron\fR [ -\fImailer\fR ] [ \fB\-d\fR \fIcrontabs_directory\fR ]
+
+.SH DESCRIPTION
+\fBsvcron\fR searches for \fI@syscrontab@\fR file which is in a different
+format (see \fIcrontab\fR (5)). It then searches \fI@crondir@/@spooldir@\fR
+directory for crontab files which are named after accounts in /etc/passwd.
+After this, \fBsvcron\fR checks \fI@syscrondir\fR directory for crontab
+files; all crontabs found are loaded into memory. \fBsvcron\fR then wakes
+up every minute, examining all stored crontabs, checking each command to
+see if it should be run in the current minute. When executing commands, any
+output is mailed to the owner of the crontab (or to the user named in the
+MAILTO environment variable in the crontab, if such exists).
+.PP
+The default mailer command is \fI@MAILARG@\fR unless overridden with the
+\-M command line option when \fBsvcron\fR is invoked. If exactly one %s is
+present this command string, it will be replaced by the user name of the
+invoking crontab.
+.PP
+Additionally, \fBsvcron\fR checks each minute to see if
+\fI@crondir@/@spooldir@\fR directory's modtime, the modtime on
+\fI@syscrontab@\fR, the modtime on \fI@syscrondir@\fR has changed, and if
+it has, \fBsvcron\fR will then examine the modtime on all crontabs and
+reload those which have changed. Thus \fBsvcron\fR need not be restarted
+whenever a crontab file is modified. Note that the \fBsvcrontab\fR (1)
+command updates the modtime of the spool directory whenever it changes a
+crontab.
+.PP
+\fBsvcron\fR(8) can be started as a supervised service in svscan(8). See also
+supervise(8). It starts in the foreground which is useful when starting
+under supervise(8).
+.PP
+\fBsvcron\fR skips files starting with '.' (dot) when searching for
+crontabs.
+
+.SS Daylight Saving Time and other time changes
+Local time changes of less than three hours, such as those caused by the
+start or end of Daylight Saving Time, are handled specially. This only
+applies to jobs that run at a specific time and jobs that are run with a
+granularity greater than one hour  Jobs that run more frequently are
+scheduled normally.
+.PP
+If time has moved forward, those jobs that would have run in the interval
+that has been skipped will be run immediately. Conversely, if time has
+moved backward, care is taken to avoid running jobs twice.
+.PP
+Time changes of more than 3 hours are considered to be corrections to the
+clock or timezone, and the new time is used immediately.
+
+.SH SIGNALS
+On receipt of a \s-2SIGHUP\s+2, the svcron daemon will close and reopen its
+log file. This is useful in scripts which rotate and age log files.  
+
+.SH CAVEATS
+In this version of \fBsvcron\fR, @crondir@ must not be readable or writable
+by any user other than root. In other words, it should be mode 0600.
+
+.SH "SEE ALSO"
+.IR svcrontab (1),
+.IR crontab (5),
+.IR svscan (8),
+.IR supervise (8)
+
+.SH AUTHOR
+.nf
+Paul Vixie <vixie@isc.org>

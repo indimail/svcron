@@ -21,7 +21,7 @@
  */
 
 /* Notes:
- *	This file has to be included by sched.h after data structure defs.
+ *	This file has to be included by svcron.h after data structure defs.
  *	We should reorg this into sections by module.
  */
 
@@ -54,7 +54,7 @@ int		job_runqueue(void),
 		swap_uids(void),
 		swap_uids_back(void),
 		load_env(char **, FILE *),
-		sched_pclose(FILE *),
+		svcron_pclose(FILE *),
 		glue_strings(char *, size_t, const char *, const char *, char),
 		strcmp_until(const char *, const char *, char),
 		allowed(const char *, const char *, const char *),
@@ -78,7 +78,7 @@ user		*load_user(int, struct passwd *, const char *),
 entry		*load_entry(FILE *, void (*)(const char *),
 			    struct passwd *, char **);
 
-FILE		*sched_popen(char *, char *, struct passwd *);
+FILE		*svcron_popen(char *, char *, struct passwd *);
 
 struct passwd	*pw_dup(const struct passwd *);
 

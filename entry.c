@@ -359,7 +359,7 @@ load_entry(FILE *file, void (*error_func)(const char *), struct passwd *pw, char
 	e->envp = tenvp;
 #endif
 
-	/*- If the first character of the command is '-' it is a sched option. */
+	/*- If the first character of the command is '-' it is a svcron option. */
 	while ((ch = get_char(file)) == '-') {
 		switch (ch = get_char(file))
 		{

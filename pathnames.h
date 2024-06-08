@@ -28,17 +28,17 @@
 #endif /*BSD*/
 
 #ifndef CRONDIR
-/* CRONDIR is where sched(8) and crontab(1) both chdir
+/* CRONDIR is where svcron(8) and svcrontab(1) both chdir
  * to; SPOOL_DIR, SCHED_ALLOW, SCHED_DENY, and LOG_FILE
  * are all relative to this directory.
  */
-#define CRONDIR   "/var/sched"
+#define CRONDIR   "/var/cron"
 #endif
 
 /* SPOOLDIR is where the crontabs live.
  * This directory will have its modtime updated
  * whenever crontab(1) changes a crontab; this is
- * the signal for sched(8) to look at each individual
+ * the signal for svcron(8) to look at each individual
  * crontab file and reload those whose modtimes are
  * newer than they were last time around (or which
  * didn't exist last time around...)
@@ -48,7 +48,7 @@
 #endif
 
 /*
- * sched allow/deny file.  At least sched.deny must
+ * svcron allow/deny file.  At least cron.deny must
  * exist for ordinary users to run crontab.
  */
 #define CRON_ALLOW "cron.allow"

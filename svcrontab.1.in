@@ -1,0 +1,103 @@
+.\" vim: tw=75
+.\" Copyright (c) 1988,1990,1993,2021 by Paul Vixie ("VIXIE")
+.\" Copyright (c) 2004 by Internet Systems Consortium, Inc. ("ISC")
+.\" Copyright (c) 1997,2000 by Internet Software Consortium, Inc.
+.\"
+.\" Permission to use, copy, modify, and distribute this software for any
+.\" purpose with or without fee is hereby granted, provided that the above
+.\" copyright notice and this permission notice appear in all copies.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS" AND VIXIE DISCLAIMS ALL WARRANTIES
+.\" WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+.\" MERCHANTABILITY AND FITNESS.  IN NO EVENT SHALL VIXIE BE LIABLE FOR
+.\" ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+.\" WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+.\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT
+.\" OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+.\"
+.\" $Id: svcrontab.1,v 1.7 2004/01/23 19:03:32 vixie Exp $
+.\"
+.TH SVCRONTAB 1 "29 December 1993"
+.UC 4
+.SH NAME
+svcrontab \- maintain svcrontab files for individual users (based on Vixie Cron)
+
+.SH SYNOPSIS
+\fBsvcrontab\fR [ \fB\-u\fR \fIuser\fR ] \fIfile\fR
+.br
+\fBsvcrontab\fR [ \fB\-u\fR \fIuser\fR ]
+[ \fB\-l\fR " | " \fB\-r\fR " | " \fB\-e\fR " ] [ -d dir ]
+
+.SH DESCRIPTION
+\fBsvcrontab\fR is the program used to install, deinstall or list the
+tables used to drive the \fBsvcron\fR (8) program. These tables are present
+in @crondir@ directory. You have three kinds of tables. One is the
+@syscrontab@ file. Then you have the spool directory @crondir@/@spooldir@.
+Each user can have their own crontab in the spool directory. You can also have
+crontab files in @syscrondir@ directory.
+
+Apart from the above, any user can create, list, delete crontab files
+anywhere specified by \-d argument.
+.PP
+If the \fI@crondir@/cron.allow\fR file exists, then you must be listed
+therein in order to be allowed to use this command. If the
+\fI@crondir@/cron.allow\fR file does not exist but the
+\fI@crondir@/cron.deny\fR file does exist, then you must \fBnot\fR be
+listed in the \fI@crondir@/cron.deny\fR file in order to use this command.
+If neither of these files exists, only the super user will be allowed to
+use this command.
+
+.SH OPTIONS
+.TP 3
+\fB\-d\fR \fIdir\fR
+This option allows you to create user crontabs in \fIdir\fR. With this
+option \fBsvcrontab\fR relinquishes setuid privileges, if the setuid bit is
+set on \fBsvcrontab\fR binary.
+
+.TP
+\fB\-u\fR \fIuser\fR
+Specifies the name of the user whose svcrontab is to be tweaked. If this
+option is not given, \fBsvcrontab\fR examines "your" svcrontab, i.e., the
+svcrontab of the person executing the command. Note that \fBsu\fR (8) can
+confuse \fBsvcrontab\fR and that if you are running inside of \fBsu\fR (8)
+you should always use the \fB\-u\fR option for safety's sake.
+
+The first form of this command is used to install a new svcrontab from some
+named file or standard input if the pseudo-filename ``-'' is given.
+
+.TP
+\fB\-l\fR
+display current svcrontab to be displayed on standard output.
+
+.TP
+\fB\-r\fR
+remove current svcrontab.
+
+.TP
+\fB\-e\fR
+edit the current svcrontab using the editor specified by the \s-1VISUAL\s+1
+or \s-1EDITOR\s+1 environment variables. After you exit from the editor,
+the modified svcrontab will be installed automatically.
+
+.SH "SEE ALSO"
+svcrontab(5), svcron(8)
+
+.SH FILES
+.nf
+/etc/indimail/cron/cron.allow
+/etc/indimail/cron/cron.deny
+.fi
+.SH STANDARDS
+The
+.I svcrontab
+command conforms to IEEE Std1003.2-1992 (``POSIX''). This new command syntax
+differs from previous versions of Vixie cron, as well as from the classic
+SVR3 syntax.
+
+.SH DIAGNOSTICS
+A fairly informative usage message appears if you run it with a bad command
+line.
+.SH AUTHOR
+.nf
+Original code by Paul Vixie <vixie@isc.org>,
+modified by Manvendra Bhangui <manvendra@indimail.org>

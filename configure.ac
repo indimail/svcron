@@ -89,26 +89,11 @@ AC_DEFINE(MAILFMT,"%s -FCronDaemon -odi -oem -oi -t",
 -oi   = Ignore "." alone on a line
 -t    = Get recipient from headers])
 
-dnl CRONIE_VAR_DEFAULT (VAR, DESCRIPTION, DEFAULT)
-dnl --------------------------------------------
-AC_DEFUN([CRONIE_CONF_VAR],
-[AC_ARG_VAR([$1], [$2 @<:@$3@:>@])
-if test "$$1" = ""; then
-	$1='$3'
-fi
-])
+AC_SUBST(crondir)
+AC_SUBST(syscrontab)
+AC_SUBST(syscrondir)
+AC_SUBST(spooldir)
+AC_SUBST(MAILARG)
 
-AC_DEFUN([ANACRON_CONF_VAR],
-[AC_ARG_VAR([$1], [$2 @<:@$3@:>@])
-if test "$$1" = ""; then
-	    $1='$3'
-		fi
-])
-
-CRONIE_CONF_VAR([CRONDIR], [the directory where all the cron directories reside], [${localstatedir}/spool/cron])
-CRONIE_CONF_VAR([SYSCRONTAB], [the current working directory of the running daemon], [${sysconfdir}/crontab])
-CRONIE_CONF_VAR([SYS_CROND_DIR], [the current working directory of the running daemon], [${sysconfdir}/cron.d])
-CRONIE_CONF_VAR([SPOOL_DIR], [the directory where all the user cron tabs reside], [${localstatedir}/spool/cron/crontabs])
-
-AC_CONFIG_FILES([Makefile])
+AC_CONFIG_FILES([svcron.8 svcrontab.1 crontab.5 Makefile])
 AC_OUTPUT

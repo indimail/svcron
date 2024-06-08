@@ -39,3 +39,8 @@ config.h.in
 .repo-build.tmp
 crontabs
 debian
+svcron
+svcrontab
+svcron.8
+svcrontab.1
+crontab.5

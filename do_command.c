@@ -28,8 +28,8 @@ static char     rcsid[] = "$Id: do_command.c,v 1.12 2021/02/07 00:20:00 vixie Ex
 #include <qprintf.h>
 #include <error.h>
 #include "cron.h"
-#define FATAL "sched: fatal: "
-#define WARN  "sched: warn: "
+#define FATAL "svcron: fatal: "
+#define WARN  "svcron: warn: "
 
 static void     child_process(const entry *, const user *);
 static int      safe_p(const char *, const char *);
@@ -39,7 +39,7 @@ do_command(const entry *e, const user *u)
 {
 	/*
 	 * fork to become asynchronous -- parent process is done immediately,
-	 * and continues to run the normal sched code, which means return to
+	 * and continues to run the normal svcron code, which means return to
 	 * tick(). the child and grandchild don't leave this function, alive.
 	 *
 	 * vfork() is unsuitable, since we have much to do, and the parent
@@ -313,7 +313,7 @@ child_process(const entry *e, const user *u)
 	children++;
 
 	/*
-	 * middle process, child of original sched, parent of process running
+	 * middle process, child of original svcron, parent of process running
 	 * the user's command.
 	 *
 	 * close the ends of the pipe that will only be referenced in the
@@ -455,7 +455,7 @@ child_process(const entry *e, const user *u)
 					substdio_flush(subfderr);
 					_exit(111);
 				}
-				if (!(mail = sched_popen(mailcmd, "w", e->pwd))) {
+				if (!(mail = svcron_popen(mailcmd, "w", e->pwd))) {
 					strerr_warn3(WARN, mailcmd, ": ", &strerr_sys);
 					mailto = NULL;
 				}
@@ -473,10 +473,10 @@ child_process(const entry *e, const user *u)
 #ifdef MAIL_FROMUSER
 				fprintf(mail, "From: %s\n", usernm);
 #else
-				fprintf(mail, "From: root (sched Daemon)\n");
+				fprintf(mail, "From: root (svcron Daemon)\n");
 #endif
 				fprintf(mail, "To: %s\n", mailto);
-				fprintf(mail, "Subject: sched <%s@%s> %s\n", usernm, first_word(hostname, "."), e->cmd);
+				fprintf(mail, "Subject: svcron <%s@%s> %s\n", usernm, first_word(hostname, "."), e->cmd);
 #ifdef MAIL_DATE
 				fprintf(mail, "Date: %s\n", arpadate(&StartTime));
 #endif							/*MAIL_DATE */
@@ -514,7 +514,7 @@ child_process(const entry *e, const user *u)
 				 * it (the grandchild) is likely to exit
 				 * after closing its stdout.
 				 */
-				status = sched_pclose(mail);
+				status = svcron_pclose(mail);
 			}
 
 			/*

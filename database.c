@@ -28,8 +28,8 @@ static char     rcsid[] = "$Id: database.c,v 1.7 2004/01/23 18:56:42 vixie Exp $
 #include <stralloc.h>
 #include "cron.h"
 
-#define FATAL "sched: fatal: "
-#define WARN  "sched: warn: "
+#define FATAL "svcron: fatal: "
+#define WARN  "svcron: warn: "
 
 #define TMAX(a,b) (is_greater_than(a,b)?(a):(b))
 #define TEQUAL(a,b) (a.tv_sec == b.tv_sec && a.tv_nsec == b.tv_nsec)
@@ -133,9 +133,7 @@ load_database(cron_db *old_db, char *dbdir)
 	user           *u, *nu;
 	char           *spool_dir;
 	static stralloc tabname = {0}, fname = {0};
-	time_t          now;
 
-	now = time(NULL);
 	/*-
 	 * before we start loading any data, do a stat on spool_dir
 	 * so that if anything changes as of this moment (i.e., before we've
@@ -143,7 +141,7 @@ load_database(cron_db *old_db, char *dbdir)
 	 */
 	spool_dir = dbdir ? dbdir : SPOOL_DIR;
 	if (stat(spool_dir, &spool_stat) < OK)
-		strerr_die4sys(111, FATAL, "stat: ", spool_dir, ": ");
+		spool_stat.st_mtim = ts_zero;
 
 #ifdef SYSCRONTAB
 	/*- track system crontab file */
@@ -189,7 +187,7 @@ load_database(cron_db *old_db, char *dbdir)
 	 * we fork a lot more often than the mtime of the dir changes.
 	 */
 	if (!(dir = opendir(spool_dir)))
-		strerr_die4sys(111, FATAL, "unable to opendir ", spool_dir, ": ");
+		goto next;
 
 	while (NULL != (dp = readdir(dir))) {
 		/*
@@ -210,10 +208,10 @@ load_database(cron_db *old_db, char *dbdir)
 		process_crontab(fname.s, fname.s, tabname.s, &crond_stat, &new_db, old_db);
 	}
 	closedir(dir);
-
+next:
 #ifdef SYS_CROND_DIR
 	if (!(dir = opendir(SYS_CROND_DIR)))
-		strerr_die4sys(111, FATAL, "unable to opendir ", SYS_CROND_DIR, ": ");
+		goto end;
 	while (NULL != (dp = readdir(dir))) {
 		if (dp->d_name[0] == '.')
 			continue;
@@ -229,6 +227,7 @@ load_database(cron_db *old_db, char *dbdir)
 	closedir(dir);
 #endif
 
+end:
 	/*
 	 * if we don't do this, then when our children eventually call
 	 * getpwnam() in do_command.c's child_process to verify MAILTO=,
