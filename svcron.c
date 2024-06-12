@@ -16,10 +16,6 @@
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#if !defined(lint) && !defined(LINT)
-static char     rcsid[] = "$Id: svcron.c,v 1.12 2004/01/23 18:56:42 vixie Exp $";
-#endif
-
 #define	MAIN_PROGRAM
 #define FATAL "svcron: fatal: "
 #define WARN  "svcron: warn: "
@@ -31,6 +27,10 @@ static char     rcsid[] = "$Id: svcron.c,v 1.12 2004/01/23 18:56:42 vixie Exp $"
 #include <qprintf.h>
 #include <subfd.h>
 #include "cron.h"
+
+#if !defined(lint) && !defined(LINT)
+static char     rcsid[] = "$Id: svcron.c,v 1.2 2024-06-12 23:58:33+05:30 Cprogrammer Exp mbhangui $";
+#endif
 
 enum timejump { negative, small, medium, large };
 
@@ -90,21 +90,26 @@ main(int argc, char *argv[])
 
 	if (!((sdir = getcwd(dirbuf, 255))))
 		strerr_die2sys(111, FATAL, "unable to get current working directory: ");
-	set_cron_uid();
+	if (getuid() != geteuid())
+		set_cron_uid();
 	if (!dbdir)
 		set_cron_cwd(FATAL);
 	else
 	if (chdir(dbdir) == -1)
 		strerr_warn4(WARN, "unable to switch to ", dbdir, ": ", &strerr_sys);
+	while (get_lock(&pidfile, sdir, dbdir));
 
 	if (!env_put2("PATH", _PATH_DEFPATH))
 		die_nomem(FATAL);
-	while (get_lock(&pidfile, sdir, dbdir));
-	fprintf(stderr, "pidfile=%s\n", pidfile);
-	strerr_warn6(ProgramName, ": ", strnum, " STARTUP ", SCHED_VERSION, ": ", 0);
+	strnum[fmt_ulong(strnum, getpid())] = 0;
+	strerr_warn6(ProgramName, ": pid ", strnum, " STARTUP ", CRON_VERSION, ": ", 0);
 	database.head = NULL;
 	database.tail = NULL;
+#ifdef LINUX
 	database.mtim = ts_zero;
+#else
+	database.mtime = ts_zero;
+#endif
 	load_database(&database, dbdir);
 	set_time(TRUE);
 	run_reboot_jobs(&database);
@@ -394,3 +399,13 @@ getversion_svcron_c()
 	const char *x = rcsid;
 	x++;
 }
+
+/*-
+ * $Log: svcron.c,v $
+ * Revision 1.2  2024-06-12 23:58:33+05:30  Cprogrammer
+ * darwin port
+ *
+ * Revision 1.1  2024-06-09 01:04:26+05:30  Cprogrammer
+ * Initial revision
+ *
+ */

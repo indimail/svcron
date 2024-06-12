@@ -2,3 +2,6 @@
 Release @version@-@release@ Start 04/06/2024 End XX/XX/XXXX
 - 04/06/2024
 1. First Version
+- 12/06/2024
+2. Bug fixes
+3. made CRON_ALLOW, CRON_DENY absolute

@@ -18,7 +18,7 @@
 
 /* cron.h - header for vixie's cron
  *
- * $Id: cron.h,v 1.6 2004/01/23 18:56:42 vixie Exp $
+ * $Id: cron.h,v 1.1 2024-06-09 01:05:09+05:30 Cprogrammer Exp mbhangui $
  *
  * vix 14nov88 [rest of log is in RCS]
  * vix 14jan87 [0 or 7 can be sunday; thanks, mwm@berkeley]
@@ -28,7 +28,6 @@
 #ifndef _CRON_H
 #define _CRON_H
 
-#define SCHED_VERSION "V4.999"
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -39,6 +38,7 @@
 #include "funcs.h"
 #include "globals.h"
 
+#define CRON_VERSION VERSION
 #define BUFSIZE_OUT 512
 #define BUFSIZE_IN  1024
 

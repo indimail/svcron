@@ -44,3 +44,5 @@ svcrontab
 svcron.8
 svcrontab.1
 crontab.5
+RCS
+ChangeLog

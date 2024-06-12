@@ -14,7 +14,9 @@
 %if %{defined nodebug}
 %global debug_package      %{nil}
 %endif
-%global mandir             /usr/share/man
+%global _prefix            @prefix@
+%global _sysconfdir        @prefix@/etc
+%global _localstatedir     @prefix@/var
 
 %if 0%{?suse_version}
 %global dist suse
@@ -37,7 +39,7 @@ License: GPLv3
 %endif
 Group: System Environment/Base
 Requires: rpm
-BuildRequires: gcc libqmail
+BuildRequires: gcc libqmail-devel
 Source0: http://downloads.sourceforge.net/indimail/%{name}-%{version}.tar.gz
 URL: https://github.com/indimail/svcron
 
@@ -50,11 +52,11 @@ package contains Paul Vixie's implementation of cron
 
 %build
 %configure --prefix=%{_prefix} \
-	--enable-crondir=/etc/indimail/cron \
-	--enable-spooldir=crontabs \
-	--enable-syscrondir=/etc/indimail/cron/cron.d \
-	--enable-syscrontab=/etc/indimail/cron/crontab \
-	--mandir=%{mandir}
+  --enable-crondir=%{_localstatedir}/cron \
+  --enable-spooldir=crontabs \
+  --enable-syscrondir=%{_sysconfdir}/cron.d \
+  --enable-syscrontab=%{_sysconfdir}/crontab \
+  --mandir=%{_prefix}/share/man
 
 %install
 %{__make} %{?_smp_mflags}
@@ -69,9 +71,9 @@ package contains Paul Vixie's implementation of cron
 
 %files
 %defattr(-, root, root,-)
-%doc %attr(644,root,root)               %{mandir}/man1/*
-%doc %attr(644,root,root)               %{mandir}/man5/*
-%doc %attr(644,root,root)               %{mandir}/man8/*
+%doc %attr(644,root,root)               %{_prefix}/share/man/man1/*
+%doc %attr(644,root,root)               %{_prefix}/share/man/man5/*
+%doc %attr(644,root,root)               %{_prefix}/share/man/man8/*
 %attr(755,root,root)                    %{_prefix}/sbin/svcron
 %attr(755,root,root)                    %{_prefix}/bin/svcrontab
 

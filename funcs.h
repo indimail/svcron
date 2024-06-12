@@ -1,5 +1,5 @@
 /*
- * $Id: funcs.h,v 1.9 2004/01/23 18:56:42 vixie Exp $
+ * $Id: funcs.h,v 1.1 2024-06-09 01:05:14+05:30 Cprogrammer Exp mbhangui $
  */
 
 /*
@@ -78,7 +78,7 @@ user		*load_user(int, struct passwd *, const char *),
 entry		*load_entry(FILE *, void (*)(const char *),
 			    struct passwd *, char **);
 
-FILE		*svcron_popen(char *, char *, struct passwd *);
+FILE		*svcron_popen(char *, char *, struct passwd *, pid_t *);
 
 struct passwd	*pw_dup(const struct passwd *);
 

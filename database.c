@@ -16,24 +16,25 @@
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#if !defined(lint) && !defined(LINT)
-static char     rcsid[] = "$Id: database.c,v 1.7 2004/01/23 18:56:42 vixie Exp $";
-#endif
-
-/*
- * vix 26jan87 [RCS has the log]
- */
-
 #include <strerr.h>
 #include <stralloc.h>
 #include "cron.h"
+
+#if !defined(lint) && !defined(LINT)
+static char     rcsid[] = "$Id: database.c,v 1.2 2024-06-12 23:58:18+05:30 Cprogrammer Exp mbhangui $";
+#endif
 
 #define FATAL "svcron: fatal: "
 #define WARN  "svcron: warn: "
 
 #define TMAX(a,b) (is_greater_than(a,b)?(a):(b))
+#ifdef LINUX
 #define TEQUAL(a,b) (a.tv_sec == b.tv_sec && a.tv_nsec == b.tv_nsec)
+#else
+#define TEQUAL(a,b) (a == b)
+#endif
 
+#ifdef LINUX
 static bool
 is_greater_than(struct timespec left, struct timespec right)
 {
@@ -44,6 +45,13 @@ is_greater_than(struct timespec left, struct timespec right)
 		return FALSE;
 	return left.tv_nsec > right.tv_nsec;
 }
+#else
+static bool
+is_greater_than(time_t left, time_t right)
+{
+	return left > right;
+}
+#endif
 
 static void
 process_crontab(const char *uname, const char *fname, const char *tabname,
@@ -93,7 +101,11 @@ process_crontab(const char *uname, const char *fname, const char *tabname,
 		 * if crontab has not changed since we last read it
 		 * in, then we can just use our existing entry.
 		 */
+#ifdef LINUX
 		if (TEQUAL(u->mtim, statbuf->st_mtim)) {
+#else
+		if (TEQUAL(u->mtime, statbuf->st_mtime)) {
+#endif
 			unlink_user(old_db, u);
 			link_user(new_db, u);
 			goto next_crontab;
@@ -113,7 +125,11 @@ process_crontab(const char *uname, const char *fname, const char *tabname,
 	}
 	u = load_user(crontab_fd, pw, fname);
 	if (u != NULL) {
+#ifdef LINUX
 		u->mtim = statbuf->st_mtim;
+#else
+		u->mtime = statbuf->st_mtime;
+#endif
 		link_user(new_db, u);
 	}
 
@@ -141,21 +157,41 @@ load_database(cron_db *old_db, char *dbdir)
 	 */
 	spool_dir = dbdir ? dbdir : SPOOL_DIR;
 	if (stat(spool_dir, &spool_stat) < OK)
+#ifdef LINUX
 		spool_stat.st_mtim = ts_zero;
+#else
+		spool_stat.st_mtime = ts_zero;
+#endif
 
 #ifdef SYSCRONTAB
 	/*- track system crontab file */
 	if (dbdir || stat(SYSCRONTAB, &syscron_stat) < OK)
+#ifdef LINUX
 		syscron_stat.st_mtim = ts_zero;
 #else
+		syscron_stat.st_mtime = ts_zero;
+#endif
+#else
+#ifdef LINUX
 	syscron_stat.st_mtim = ts_zero;
+#else
+	syscron_stat.st_mtime = ts_zero;
+#endif
 #endif
 
 #ifdef SYS_CROND_DIR
 	if (dbdir || stat(SYS_CROND_DIR, &crond_stat) < OK)
+#ifdef LINUX
 		crond_stat.st_mtim = ts_zero;
 #else
+		crond_stat.st_mtime = ts_zero;
+#endif
+#else
+#ifdef LINUX
 	crond_stat.st_mtim = ts_zero;
+#else
+	crond_stat.st_mtime = ts_zero;
+#endif
 #endif
 
 	/*
@@ -166,7 +202,11 @@ load_database(cron_db *old_db, char *dbdir)
 	 * so is guaranteed to be different than the stat() mtime the first
 	 * time this function is called.
 	 */
+#ifdef LINUX
 	if (TEQUAL(old_db->mtim, TMAX(crond_stat.st_mtim, TMAX(spool_stat.st_mtim, syscron_stat.st_mtim))))
+#else
+	if (TEQUAL(old_db->mtime, TMAX(crond_stat.st_mtime, TMAX(spool_stat.st_mtime, syscron_stat.st_mtime))))
+#endif
 		return;
 
 	/*
@@ -175,10 +215,18 @@ load_database(cron_db *old_db, char *dbdir)
 	 * actually changed. Whatever is left in the old database when
 	 * we're done is chaff -- crontabs that disappeared.
 	 */
+#ifdef LINUX
 	new_db.mtim = TMAX(spool_stat.st_mtim, syscron_stat.st_mtim);
+#else
+	new_db.mtime = TMAX(spool_stat.st_mtime, syscron_stat.st_mtime);
+#endif
 	new_db.head = new_db.tail = NULL;
 
+#ifdef LINUX
 	if (!dbdir && !TEQUAL(syscron_stat.st_mtim, ts_zero))
+#else
+	if (!dbdir && !TEQUAL(syscron_stat.st_mtime, ts_zero))
+#endif
 		process_crontab("root", NULL, SYSCRONTAB, &syscron_stat, &new_db, old_db);
 
 	/*
@@ -218,7 +266,7 @@ next:
 		if (!stralloc_copys(&fname, dp->d_name) ||
 				!stralloc_0(&fname))
 			die_nomem(FATAL);
-		if (!stralloc_copys(&tabname, spool_dir) ||
+		if (!stralloc_copys(&tabname, SYS_CROND_DIR) ||
 				!stralloc_append(&tabname, "/") ||
 				!stralloc_cat(&tabname, &fname))
 			die_nomem(FATAL);
@@ -290,3 +338,12 @@ getversion_database_c()
 	const char     *x = rcsid;
 	x++;
 }
+/*-
+ * $Log: database.c,v $
+ * Revision 1.2  2024-06-12 23:58:18+05:30  Cprogrammer
+ * darwin port
+ *
+ * Revision 1.1  2024-06-09 01:04:11+05:30  Cprogrammer
+ * Initial revision
+ *
+ */

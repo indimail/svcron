@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.71])
-AC_INIT([svcron],1.0,[Manvendra Bhangui manvendra@indimail.org],svcron, [http://www.indimail.org])
+AC_INIT([svcron],m4_normalize(m4_include([conf-version])),m4_normalize(m4_include([conf-email])),svcron, [https://github.com/indimail/svcron])
 AC_CONFIG_SRCDIR([svcron.c])
 AC_CONFIG_HEADERS([config.h])
 LT_INIT
@@ -11,13 +11,6 @@ AM_INIT_AUTOMAKE([foreign silent-rules no-dist])
 # Checks for programs.
 AC_PROG_CC
 AC_PROG_INSTALL
-
-# Checks for libraries.
-AC_CHECK_LIB(qmail, substdio_fdbuf, [AC_SUBST([LIB_QMAIL], ["-lqmail"]) AC_DEFINE([HAVE_QMAIL], [1],[qmail Library])],nqmail=t,)
-if test " $noqmail" = " t"
-then
-  AC_MSG_ERROR(Could not find qmail library.)
-fi
 
 # Checks for header files.
 AC_CHECK_HEADERS([fcntl.h paths.h sys/file.h sys/param.h sys/time.h syslog.h unistd.h utime.h])
@@ -35,6 +28,52 @@ AC_FUNC_FORK
 AC_FUNC_MALLOC
 AC_FUNC_REALLOC
 AC_CHECK_FUNCS([bzero chown fchown dup2 endpwent ftruncate gethostname isascii mkdir putenv setlocale strcasecmp strchr strdup strerror strstr strtol utime])
+
+case "$host" in
+*-*-sunos4.1.1*)
+	CPPFLAGS="$CPPFLAGS -DSUNOS4"
+	CFLAGS="$CFLAGS -O4 -Wall -fPIC"
+	CXXFLAGS="$CXXFLAGS -O4 -Wall -fPIC"
+	;;
+*-*-solaris*)
+	CPPFLAGS="$CPPFLAGS -DSOLARIS"
+	CFLAGS="$CFLAGS -O4 -Wall -fPIC"
+	CXXFLAGS="$CXXFLAGS -O4 -Wall -fPIC"
+	;;
+*-*-linux*)
+	CPPFLAGS="$CPPFLAGS -DLINUX"
+	CFLAGS="$CFLAGS -O4 -Wall -fPIC"
+	CXXFLAGS="$CXXFLAGS -DLINUX -O4 -Wno-delete-non-virtual-dtor -Wno-reorder -Wall -fPIC"
+	LDFLAGS="$LDFLAGS -pie"
+	;;
+*-*-freebsd*)
+	CPPFLAGS="$CPPFLAGS -DFREEBSD -I/usr/local/include -I/usr/local/include/qmail"
+	CFLAGS="$CFLAGS -I/usr/local/include -I/usr/local/include/qmail -Wall"
+	CXXFLAGS="$CXXFLAGS -DFREEBSD -I/usr/local/include -Wall -fPIC"
+	CXXFLAGS="$CXXFLAGS -Wno-delete-non-virtual-dtor -Wno-deprecated-register -Wno-reorder"
+	CXXFLAGS="$CXXFLAGS -Wno-delete-non-abstract-non-virtual-dtor"
+	LDFLAGS="$LDFLAGS -L/usr/local/lib"
+	;;
+*-*-darwin*)
+	CPPFLAGS="$CPPFLAGS -DDARWIN -I/opt/local/include"
+	CFLAGS="$CFLAGS -I/opt/local/include -I/usr/local/include -I/opt/local/include/qmail -Wall"
+	CXXFLAGS="$CXXFLAGS -DDARWIN -Wall -fPIC"
+	CXXFLAGS="$CXXFLAGS -DBIND_8_COMPAT -I/opt/local/include -Wno-c++11-extensions"
+	CXXFLAGS="$CXXFLAGS -Wno-delete-non-virtual-dtor -Wno-reorder-ctor -Wno-reorder"
+	LDFLAGS="$LDFLAGS -L/opt/local/lib -L/usr/local/lib"
+	;;
+*)
+	CFLAGS="$CFLAGS -O4 -Wall -fPIC"
+	CXXFLAGS="$CXXFLAGS -O4 -Wall -fPIC"
+	;;
+esac
+
+# Checks for libraries.
+AC_CHECK_LIB(qmail, substdio_fdbuf, [AC_SUBST([LIB_QMAIL], ["-lqmail"]) AC_DEFINE([HAVE_QMAIL], [1],[qmail Library])],nqmail=t,)
+if test " $noqmail" = " t"
+then
+  AC_MSG_ERROR(Could not find qmail library.)
+fi
 
 crondir="${localstatedir}/spool/cron"
 AC_ARG_ENABLE(crondir, [  --enable-crondir=dir         directory where cron directories are present.],
@@ -80,7 +119,16 @@ AC_ARG_ENABLE(syscrontab, [  --enable-syscrontab=file     system crontab file.],
 	])
 AC_DEFINE_UNQUOTED(SYSCRONTAB,"$syscrontab", system crontab file)
 
-AC_DEFINE(MAILARG,"/usr/bin/sendmail",[There will be path to sendmail.])
+sendmail="/usr/bin/sendmail"
+AC_ARG_ENABLE(sendmail, [  --enable-sendmail=file     sendmail path.],
+	sendmail="$enableval",
+	[
+		if test "$sendmail" = ""
+		then
+			AC_MSG_ERROR([sendmail path set, specify --enable-sendmail.])
+		fi
+	])
+AC_DEFINE_UNQUOTED(MAILARG,"$sendmail",[This will be path to sendmail.])
 
 AC_DEFINE(MAILFMT,"%s -FCronDaemon -odi -oem -oi -t",
 [-Fx   = Set full-name of sender
@@ -93,7 +141,7 @@ AC_SUBST(crondir)
 AC_SUBST(syscrontab)
 AC_SUBST(syscrondir)
 AC_SUBST(spooldir)
-AC_SUBST(MAILARG)
+AC_SUBST(sendmail)
 
 AC_CONFIG_FILES([svcron.8 svcrontab.1 crontab.5 Makefile])
 AC_OUTPUT

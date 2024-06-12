@@ -16,11 +16,11 @@
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#if !defined(lint) && !defined(LINT)
-static char     rcsid[] = "$Id: job.c,v 1.6 2004/01/23 18:56:43 vixie Exp $";
-#endif
-
 #include "cron.h"
+
+#if !defined(lint) && !defined(LINT)
+static char     rcsid[] = "$Id: job.c,v 1.1 2024-06-09 01:04:19+05:30 Cprogrammer Exp mbhangui $";
+#endif
 
 typedef struct _job {
 	struct _job    *next;
@@ -77,3 +77,10 @@ getversion_job_c()
 	const char *x = rcsid;
 	x++;
 }
+
+/*
+ * $Log: job.c,v $
+ * Revision 1.1  2024-06-09 01:04:19+05:30  Cprogrammer
+ * Initial revision
+ *
+ */

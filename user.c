@@ -16,15 +16,11 @@
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#if !defined(lint) && !defined(LINT)
-static char     rcsid[] = "$Id: user.c,v 1.5 2004/01/23 18:56:43 vixie Exp $";
-#endif
-
-/*
- * vix 26jan87 [log is in RCS file]
- */
-
 #include "cron.h"
+
+#if !defined(lint) && !defined(LINT)
+static char     rcsid[] = "$Id: user.c,v 1.2 2024-06-12 23:58:55+05:30 Cprogrammer Exp mbhangui $";
+#endif
 
 void
 free_user(user *u)
@@ -42,11 +38,7 @@ free_user(user *u)
 user           *
 load_user(int crontab_fd, struct passwd *pw, const char *name)
 {
-#if 1
 	char           *envstr;
-#else
-	char            envstr[MAX_ENVSTR];
-#endif
 	FILE           *file;
 	user           *u;
 	entry          *e;
@@ -118,3 +110,13 @@ getversion_user_c()
 	const char     *x = rcsid;
 	x++;
 }
+
+/*-
+ * $Log: user.c,v $
+ * Revision 1.2  2024-06-12 23:58:55+05:30  Cprogrammer
+ * removed redundant code
+ *
+ * Revision 1.1  2024-06-09 01:04:30+05:30  Cprogrammer
+ * Initial revision
+ *
+ */

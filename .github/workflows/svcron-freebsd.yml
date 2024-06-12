@@ -1,0 +1,44 @@
+name: svcron FreeBSD
+
+on:
+  push:
+    paths:
+      - '**'
+      - .github/workflows/svcron-freebsd.yml
+      - '!.github/workflows/svcron-c-cpp.yml'
+      - '!.github/workflows/svcron-obs.yml'
+      - '!**/debian/*'
+      - '!**/svcron.spec.in'
+      - '!**/*.8'
+      - '!**/*.5'
+      - '!**/*.1'
+      - '!**/doc/*'
+      - '!**.md'
+  workflow_dispatch:
+
+jobs:
+  testfreebsd:
+    runs-on: ubuntu-latest
+    name: FreeBSD
+    env:
+      MYTOKEN : ${{ secrets.MYTOKEN }}
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        path: svcron
+    - uses: actions/checkout@v4
+      with:
+        repository: mbhangui/libqmail
+        path: libqmail
+    - name: build svcron
+      id: FreeBSD
+      uses: vmactions/freebsd-vm@v1
+      with:
+        envs: 'MYTOKEN'
+        usesh: true
+        prepare: pkg install -y curl automake autoconf libtool pkgconf
+        run: |
+          cd libqmail; ./default.configure; make; make install-strip
+          cd ../svcron
+          ./default.configure
+          make

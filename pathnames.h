@@ -16,9 +16,7 @@
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-/*
- * $Id: pathnames.h,v 1.9 2004/01/23 18:56:43 vixie Exp $
- */
+/*- $Id: pathnames.h,v 1.1 2024-06-12 20:38:53+05:30 Cprogrammer Exp mbhangui $ */
 
 #ifndef _PATHNAMES_H_
 #define _PATHNAMES_H_
@@ -28,11 +26,11 @@
 #endif /*BSD*/
 
 #ifndef CRONDIR
-/* CRONDIR is where svcron(8) and svcrontab(1) both chdir
- * to; SPOOL_DIR, SCHED_ALLOW, SCHED_DENY, and LOG_FILE
- * are all relative to this directory.
+/*-
+ * CRONDIR is where svcron(8) and svcrontab(1) both chdir
+ * to; SPOOL_DIR, LOG_FILE are all relative to this directory.
  */
-#define CRONDIR   "/var/cron"
+#define CRONDIR   "/var/spool/cron"
 #endif
 
 /* SPOOLDIR is where the crontabs live.
@@ -51,8 +49,8 @@
  * svcron allow/deny file.  At least cron.deny must
  * exist for ordinary users to run crontab.
  */
-#define CRON_ALLOW "cron.allow"
-#define CRON_DENY  "cron.deny"
+#define CRON_ALLOW CRONDIR "/cron.allow"
+#define CRON_DENY  CRONDIR "/cron.deny"
 
 /* undefining this turns off logging to a file.  If
  * neither LOG_FILE or SYSLOG is defined, we don't log.
@@ -69,12 +67,12 @@
 #define PIDFILE          "crond.pid"
 
 #ifndef SYS_CROND_DIR
-#define SYS_CROND_DIR    "/etc/indimail/cron.d"
+#define SYS_CROND_DIR    "/etc/cron.d"
 #endif
 
 /* 4.3BSD-style crontab */
 #ifndef SYSCRONTAB
-#define SYSCRONTAB       "/etc/indimail/crontabs"
+#define SYSCRONTAB       "/etc/crontabs"
 #endif
 
 /*

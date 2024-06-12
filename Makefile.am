@@ -12,7 +12,7 @@ edit = sed \
 	-e 's|@email\@|'"`cat conf-email`"'|g' \
 	-e 's}@pkgconfigdir\@}$(pkgconfigdir)}g' \
 	-e 's}@VERSION\@}$(VERSION)}g' \
-	-e 's}@localstatedir\@}$(localstatedir)}g'
+	-e 's}@localstatedir\@}$(localstatedir)}g' \
 	-e 's}@prefix\@}$(prefix)}g'
 
 DEFS=@DEFS@ -fno-strict-aliasing -I/usr/include/qmail -I.
@@ -41,6 +41,8 @@ svcrontab_LDADD = misc.lo entry.lo env.lo pw_dup.lo $(LIB_QMAIL)
 
 svcron.spec: svcron.spec.in catChangeLog doc/ChangeLog conf-version conf-release conf-email
 	(cat $@.in;./catChangeLog) | $(edit) > $@
+svcron.changes: doc/ChangeLog conf-version conf-release conf-email
+	./catChangeLog --changes doc/ChangeLog > $@
 
 install-data-hook:
 	$(mkinstalldirs) $(DESTDIR)$(datarootdir)/doc/svcron || exit 1

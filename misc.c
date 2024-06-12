@@ -16,15 +16,7 @@
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#if !defined(lint) && !defined(LINT)
-static char     rcsid[] = "$Id: misc.c,v 1.16 2004/01/23 18:56:43 vixie Exp $";
-#endif
-
-/*
- * vix 26jan87 [RCS has the rest of the log]
- * vix 30dec86 [written]
- */
-
+#include <unistd.h>
 #include <limits.h>
 #include <subfd.h>
 #include <strerr.h>
@@ -35,6 +27,10 @@ static char     rcsid[] = "$Id: misc.c,v 1.16 2004/01/23 18:56:43 vixie Exp $";
 #include <qprintf.h>
 #include <sys/ipc.h>
 #include "cron.h"
+
+#if !defined(lint) && !defined(LINT)
+static char     rcsid[] = "$Id: misc.c,v 1.1 2024-06-09 01:04:21+05:30 Cprogrammer Exp mbhangui $";
+#endif
 
 #define FATAL "svcron: fatal: "
 #define WARN  "svcron: warn: "
@@ -154,16 +150,10 @@ set_cron_cwd(const char *ident)
 	struct group   *grp = NULL;
 #endif
 
-#ifdef CRON_GROUP
-	errno = 0;
-	grp = getgrnam(CRON_GROUP);
-	if (!grp && errno)
-		strerr_die4sys(111, ident, "failed to get group entry for ", CRON_GROUP, ": ");
-#endif
 	/*- first check for CRONDIR ("/etc/indimail/cron" or some such) */
 	if (stat(CRONDIR, &sb) < OK && errno == ENOENT) {
 		strerr_warn4(WARN, "unable to stat ", CRONDIR, ": ", &strerr_sys);
-		if (OK == mkdir(CRONDIR, 0710)) {
+		if (OK == mkdir(CRONDIR, 0700)) {
 			subprintf(subfderr, "created directory %s\n", CRONDIR);
 			substdio_flush(subfderr);
 			if (stat(CRONDIR, &sb) == -1)
@@ -173,6 +163,8 @@ set_cron_cwd(const char *ident)
 	}
 	if (!S_ISDIR(sb.st_mode))
 		strerr_die3x(111, ident, CRONDIR, ": not a directory, bailing out");
+	if (sb.st_mode != 0700 && chmod(CRONDIR, 0700) == -1)
+		strerr_warn4(ident, "chmod 0700 ", CRONDIR, ": ", &strerr_sys);
 	if (chdir(CRONDIR) < OK) /*- /etc/indimail/cron */
 		strerr_die4sys(111, ident, "unable to switch to ", CRONDIR, ": ");
 
@@ -191,14 +183,32 @@ set_cron_cwd(const char *ident)
 	}
 	if (!S_ISDIR(sb.st_mode))
 		strerr_die5x(111, ident, CRONDIR, "/", SPOOL_DIR, ": not a directory, bailing out");
+	if (sb.st_mode != 0700 && chmod(SPOOL_DIR, 0700) == -1)
+		strerr_warn6(ident, "chmod 0700 ", CRONDIR, "/", SPOOL_DIR, ": ", &strerr_sys);
 #ifdef CRON_GROUP
+	errno = 0;
+	grp = getgrnam(CRON_GROUP);
+	if (!grp && errno)
+		strerr_die4sys(111, ident, "failed to get group entry for ", CRON_GROUP, ": ");
 	if (sb.st_gid != grp->gr_gid && chown(SPOOL_DIR, -1, grp->gr_gid) == -1)
 		strerr_die8sys(111, ident, "chgrp ", CRON_GROUP, " ", CRONDIR, "/", SPOOL_DIR, ": ");
+	if (sb.st_mode != 01730 && chmod(SPOOL_DIR, 01730) == -1)
+		strerr_warn6(ident, "chmod 01730 ", CRONDIR, "/", SPOOL_DIR, ": ", &strerr_sys);
 #endif
-	if (sb.st_mode != 01730) {
-		if (chmod(SPOOL_DIR, 01730) == -1)
-			strerr_warn6(ident, "chmod 01730 ", CRONDIR, "/", SPOOL_DIR, ": ", &strerr_sys);
+	if (stat(SYS_CROND_DIR, &sb) < OK && errno == ENOENT) {
+		strerr_warn4(WARN, "unable to stat ", SYS_CROND_DIR, ": ", &strerr_sys);
+		if (OK == mkdir(SYS_CROND_DIR, 0755)) {
+			subprintf(subfderr, "created directory %s\n", SYS_CROND_DIR);
+			substdio_flush(subfderr);
+			if (stat(SYS_CROND_DIR, &sb) == -1)
+				strerr_die4sys(111, ident, "unable to stat ", SYS_CROND_DIR, ": ");
+		} else
+			strerr_die3sys(111, ident, SYS_CROND_DIR, ": ");
 	}
+	if (!S_ISDIR(sb.st_mode))
+		strerr_die3x(111, ident, SYS_CROND_DIR, ": not a directory, bailing out");
+	if (sb.st_mode != 0755 && chmod(SYS_CROND_DIR, 0755) == -1)
+		strerr_warn4(ident, "chmod 0755 ", SYS_CROND_DIR,  ": ", &strerr_sys);
 }
 
 /*
@@ -207,13 +217,13 @@ set_cron_cwd(const char *ident)
  *
  * note: main() calls us twice; once before forking, once after.
  * we maintain static storage of the file pointer so that we
- * can rewrite our PID into _PATH_SCHED_PID after the fork.
+ * can rewrite our PID into _PATH_CRON_PID after the fork.
  */
 int
 get_lock(char **pidfile, const char *sdir, const char *dbdir)
 {
 	static int      fd = -1;
-	char           *run_dir;
+	const char     *run_dir;
 	char            strnum[FMT_ULONG], buf[7];
 	pid_t           pid;
 	int             n, fdsource;
@@ -221,26 +231,33 @@ get_lock(char **pidfile, const char *sdir, const char *dbdir)
 	static stralloc d = { 0 };
 
 	if (!access(run_dir = "/run", F_OK)) {
-		if (!dbdir)
+		if (!dbdir) {
 			*pidfile = "/run/svcron/"PIDFILE;
-		if (access("/run/svcron", F_OK) && mkdir("/run/svcron", 01777) == -1)
-			strerr_die2sys(111, FATAL, "unable to mkdir /run/svcron: ");
-		run_dir = "/run";
+			if (access("/run/svcron", F_OK) && mkdir("/run/svcron", 01777) == -1)
+				strerr_die2sys(111, FATAL, "unable to mkdir /run/svcron: ");
+			run_dir = "/run";
+		} else
+			run_dir = dbdir;
 	} else
 	if (!access(run_dir = "/var/run", F_OK)) {
-		if (!dbdir)
+		if (!dbdir) {
 			*pidfile = "/var/run/svcron/"PIDFILE;
-		if (access("/var/run/svcron", F_OK) && mkdir("/var/run/svcron", 01777) == -1)
-			strerr_die2sys(111, FATAL, "unable to mkdir /var/run/svcron: ");
+			if (access("/var/run/svcron", F_OK) && mkdir("/var/run/svcron", 01777) == -1)
+				strerr_die2sys(111, FATAL, "unable to mkdir /var/run/svcron: ");
+			run_dir = "/var/run";
+		} else
+			run_dir = dbdir;
 	} else {
-		run_dir = "/tmp";
 		if (!dbdir)
 			*pidfile = "/tmp"PIDFILE;
+		run_dir = "/tmp";
 	}
 	if (dbdir) {
 		if (!(dir = ftok(dbdir, 1)))
 			strerr_die4sys(111, FATAL, "unable to get ftok for ", dbdir, ": ");
-		if (!qsprintf(&d, "%s/svcron/%x.pid", run_dir, dir))
+		if (access(".svcron", F_OK) && mkdir(".svcron", 0700) == -1)
+			strerr_die2sys(111, FATAL, "unable to mkdir /run/svcron: ");
+		if (!qsprintf(&d, "%s/.svcron/%x.pid", run_dir, dir))
 			die_nomem(FATAL);
 		*pidfile = d.s;
 	}
@@ -628,7 +645,7 @@ arpadate(clock)
 }
 #endif /*MAIL_DATE */
 
-#ifdef HAVE_SAVED_UIDS
+#if defined(HAVE_SAVED_UIDS) || defined(_POSIX_SAVED_IDS)
 static uid_t save_euid;
 static gid_t save_egid;
 
@@ -643,7 +660,6 @@ int swap_uids_back(void)
 {
 	return ((setegid(save_egid) == -1 || seteuid(save_euid) == -1) ? -1 : 0);
 }
-
 #else /*HAVE_SAVED_UIDS */
 int swap_uids(void)
 {
@@ -719,3 +735,10 @@ getversion_misc_c()
 	const char     *x = rcsid;
 	x++;
 }
+
+/*-
+ * $Log: misc.c,v $
+ * Revision 1.1  2024-06-09 01:04:21+05:30  Cprogrammer
+ * Initial revision
+ *
+ */

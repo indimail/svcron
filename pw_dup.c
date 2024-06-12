@@ -30,18 +30,17 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-#if !defined(lint) && !defined(LINT)
-static char rcsid[] = "$Id: pw_dup.c,v 1.2 2004/01/23 18:56:43 vixie Exp $";
-#endif
 
 #include <sys/param.h>
-
 #if !defined(OpenBSD) || OpenBSD < 200105
-
 #include <pwd.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+
+#if !defined(lint) && !defined(LINT)
+static char rcsid[] = "$Id: pw_dup.c,v 1.1 2024-06-09 01:04:25+05:30 Cprogrammer Exp mbhangui $";
+#endif
 
 struct passwd *
 pw_dup(const struct passwd *pw) {
@@ -133,3 +132,10 @@ getversion_pw_dup_c()
 	const char *x = rcsid;
 	x++;
 }
+
+/*-
+ * $Log: pw_dup.c,v $
+ * Revision 1.1  2024-06-09 01:04:25+05:30  Cprogrammer
+ * Initial revision
+ *
+ */

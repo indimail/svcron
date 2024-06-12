@@ -16,10 +16,6 @@
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#if !defined(lint) && !defined(LINT)
-static char     rcsid[] = "$Id: do_command.c,v 1.12 2021/02/07 00:20:00 vixie Exp $";
-#endif
-
 #include <sig.h>
 #include <substdio.h>
 #include <subfd.h>
@@ -30,6 +26,10 @@ static char     rcsid[] = "$Id: do_command.c,v 1.12 2021/02/07 00:20:00 vixie Ex
 #include "cron.h"
 #define FATAL "svcron: fatal: "
 #define WARN  "svcron: warn: "
+
+#if !defined(lint) && !defined(LINT)
+static char     rcsid[] = "$Id: do_command.c,v 1.1 2024-06-12 20:27:21+05:30 Cprogrammer Exp mbhangui $";
+#endif
 
 static void     child_process(const entry *, const user *);
 static int      safe_p(const char *, const char *);
@@ -78,22 +78,28 @@ sigchld_reaper(char *ident)
 			break;
 		if (WIFSTOPPED(status) || WIFCONTINUED(status)) {
 			if (verbose)
-				subprintf(subfderr, "%s: %-10s pid %10d %s by signal %d\n", ProgramName, ident, pid, WIFSTOPPED(status) ? "stopped" : "started",
-						WIFSTOPPED(status) ? WSTOPSIG(status) : SIGCONT);
+				if (subprintf(subfderr, "%s: %-10s pid %10d %s by signal %d\n",
+						ProgramName, ident, pid, WIFSTOPPED(status) ? "stopped" : "started",
+						WIFSTOPPED(status) ? WSTOPSIG(status) : SIGCONT) == -1)
+					strerr_die2sys(111, FATAL, "unable to write to descriptor 2: ");
 			continue;
 		} else
 		if (WIFSIGNALED(status)) {
 			if (verbose)
-				subprintf(subfderr, "%s: %-10s pid %10d killed by signal %d\n", ProgramName, ident, pid, WTERMSIG(status));
+				if (subprintf(subfderr, "%s: %-10s pid %10d killed by signal %d\n",
+						ProgramName, ident, pid, WTERMSIG(status)) == -1)
+					strerr_die2sys(111, FATAL, "unable to write to descriptor 2: ");
 		} else
 		if (WIFEXITED(status)) {
 			if (verbose)
-				subprintf(subfderr, "%s: %-10s pid %10d: normal exit return status %d\n", ProgramName, ident, pid, WEXITSTATUS(status));
+				if (subprintf(subfderr, "%s: %-10s pid %10d: normal exit return status %d\n",
+						ProgramName, ident, pid, WEXITSTATUS(status)) == -1)
+					strerr_die2sys(111, FATAL, "unable to write to descriptor 2: ");
 		}
 		break;
 	} /*- for (; pid = waitpid(-1, &status, WNOHANG | WUNTRACED);) -*/
-	if (verbose)
-		substdio_flush(subfderr);
+	if (verbose && substdio_flush(subfderr) == -1)
+		strerr_die2sys(111, FATAL, "unable to write to descriptor 2: ");
 }
 
 static void
@@ -103,6 +109,10 @@ child_process(const entry *e, const user *u)
 	char           *input_data, *usernm, *mailto, *x;
 	int             children = 0;
 	char            strnum[FMT_ULONG];
+	pid_t           mailpid;
+#ifndef LOGIN_CAP
+	uid_t           uid1, uid2;
+#endif
 
 	/*- discover some useful and important environment settings */
 	usernm = e->pwd->pw_name;
@@ -172,33 +182,30 @@ child_process(const entry *e, const user *u)
 		 * PID is part of the log message.
 		 */
 		if ((e->flags & DONT_LOG) == 0) {
-			int             len;
-
-			strnum[len = fmt_ulong(strnum, getpid())] = 0;
-			if (subprintf(subfderr, "%s: grandchild pid %10d: user %s command[", ProgramName, getpid(), usernm) == -1)
+			if (verbose && subprintf(subfderr, "%s: grandchild pid %10d: user %s command[", ProgramName, getpid(), usernm) == -1)
 				strerr_die2sys(111, FATAL, "unable to write to descriptor 2: ");
 			for (x = e->cmd; *x; x++) {
 				if (*x < ' ') { /*- control char */
-					if (substdio_put(subfderr, "^", 1) == -1)
+					if (verbose && substdio_put(subfderr, "^", 1) == -1)
 						strerr_die2sys(111, FATAL, "grandchild: unable to write to descriptor 2: ");
 					*x += '@';
-					if (substdio_put(subfderr, x, 1) == -1)
+					if (verbose && substdio_put(subfderr, x, 1) == -1)
 						strerr_die2sys(111, FATAL, "grandchild: unable to write to descriptor 2: ");
 				} else
 				if (*x < 0177) { /* printable */
-					if (substdio_put(subfderr, x, 1) == -1)
+					if (verbose && substdio_put(subfderr, x, 1) == -1)
 						strerr_die2sys(111, FATAL, "grandchild: unable to write to descriptor 2: ");
 				} else
 				if (*x == 0177) { /* delete/rubout */
-					if (substdio_put(subfderr, "^?", 2) == -1)
+					if (verbose && substdio_put(subfderr, "^?", 2) == -1)
 						strerr_die2sys(111, FATAL, "grandchild: unable to write to descriptor 2: ");
 				} else
-				if (subprintf(subfderr, "\\%03o", *x) == -1)
+				if (verbose && subprintf(subfderr, "\\%03o", *x) == -1)
 					strerr_die2sys(111, FATAL, "grandchild: unable to write to descriptor 2: ");
 			}
-			if (substdio_put(subfderr, "]\n", 2) == -1)
+			if (verbose && substdio_put(subfderr, "]\n", 2) == -1)
 				strerr_die2sys(111, FATAL, "grandchild: unable to write to descriptor 2: ");
-			if (substdio_flush(subfderr))
+			if (verbose && substdio_flush(subfderr))
 				strerr_die2sys(111, FATAL, "grandchild: unable to write to descriptor 2: ");
 		}
 
@@ -276,18 +283,22 @@ child_process(const entry *e, const user *u)
 			}
 		}
 #else
-		strnum[fmt_ushort(strnum, e->pwd->pw_gid)] = 0;
-		if (setgid(e->pwd->pw_gid) == -1)
-			strerr_die4sys(111, FATAL, "grandchild: setgid failed for gid ", strnum, ": ");
-		if (initgroups(usernm, e->pwd->pw_gid) == -1)
-			strerr_die4sys(111, FATAL, "grandchild: failed to set groups for ", usernm, ": ");
+		uid1 = getuid();
+		uid2 = geteuid();
+		if (uid1 != uid2 || !uid1 || !uid2) {
+			strnum[fmt_ushort(strnum, e->pwd->pw_gid)] = 0;
+			if (setgid(e->pwd->pw_gid) == -1)
+				strerr_die4sys(111, FATAL, "grandchild: setgid failed for gid ", strnum, ": ");
+			if (initgroups(usernm, e->pwd->pw_gid) == -1)
+				strerr_die4sys(111, FATAL, "grandchild: failed to set groups for ", usernm, ": ");
 #if (defined(BSD)) && (BSD >= 199103)
-		if (setlogin(usernm) == -1)
-			strerr_die4sys(111, FATAL, "grandchild: failed to set login for ", usernm, ": ");
+			if (setlogin(usernm) == -1)
+				strerr_die4sys(111, FATAL, "grandchild: failed to set login for ", usernm, ": ");
 #endif							/* BSD */
-		if (setuid(e->pwd->pw_uid) < 0)
-			strerr_die4sys(111, FATAL, "grandchild: failed to set uid for ", usernm, ": ");
-		/* we aren't root after this... */
+			if (setuid(e->pwd->pw_uid) < 0)
+				strerr_die4sys(111, FATAL, "grandchild: failed to set uid for ", usernm, ": ");
+			/* we aren't root after this... */
+		}
 
 #endif	/* LOGIN_CAP */
 		if (!(x = myenv_get("HOME", e->envp)))
@@ -374,7 +385,8 @@ child_process(const entry *e, const user *u)
 		/*
 		 * close the pipe, causing an EOF condition.
 		 */
-		substdio_flush(&ssout);
+		if (substdio_flush(&ssout) == -1)
+			strerr_die2sys(111, FATAL, "unable to write to descriptor 1: ");
 		close(stdin_pipe[WRITE_PIPE]);
 		_exit(0);
 	}
@@ -451,13 +463,22 @@ child_process(const entry *e, const user *u)
 				else
 					(void) sprintf(mailcmd, MAILFMT, MAILARG);
 				if (msg != NULL) {
-					subprintf(subfderr, "%s %s\n", FATAL, msg);
-					substdio_flush(subfderr);
+					if (subprintf(subfderr, "%s %s\n", FATAL, msg) == -1)
+						strerr_die2sys(111, FATAL, "unable to write to descriptor 2: ");
+					if (substdio_flush(subfderr) == -1)
+						strerr_die2sys(111, FATAL, "unable to write to descriptor 2: ");
 					_exit(111);
 				}
-				if (!(mail = svcron_popen(mailcmd, "w", e->pwd))) {
+				if (!(mail = svcron_popen(mailcmd, "w", e->pwd, &mailpid))) {
 					strerr_warn3(WARN, mailcmd, ": ", &strerr_sys);
 					mailto = NULL;
+				}
+				if (verbose) {
+					if (subprintf(subfderr, "%s: mail       pid %10d: user %s command[%s]\n",
+							ProgramName, mailpid, usernm, mailcmd) == -1)
+						strerr_die2sys(111, FATAL, "unable to write to descriptor 2: ");
+					if (substdio_flush(subfderr) == -1)
+						strerr_die2sys(111, FATAL, "unable to write to descriptor 2: ");
 				}
 			}
 
@@ -481,7 +502,7 @@ child_process(const entry *e, const user *u)
 				fprintf(mail, "Date: %s\n", arpadate(&StartTime));
 #endif							/*MAIL_DATE */
 				for (env = e->envp; *env; env++)
-					fprintf(mail, "X-Sched-Env: <%s>\n", *env);
+					fprintf(mail, "X-Cron-Env: <%s>\n", *env);
 				fprintf(mail, "\n");
 
 				/* this was the first char from the pipe */
@@ -560,3 +581,10 @@ getversion_do_command_c()
 	const char *x = rcsid;
 	x++;
 }
+
+/*-
+ * $Log: do_command.c,v $
+ * Revision 1.1  2024-06-12 20:27:21+05:30  Cprogrammer
+ * Initial revision
+ *
+ */

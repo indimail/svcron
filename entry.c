@@ -16,12 +16,7 @@
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#if !defined(lint) && !defined(LINT)
-static char     rcsid[] = "$Id: entry.c,v 1.17 2004/01/23 18:56:42 vixie Exp $";
-#endif
-
 /*-
- * vix 26jan87 [RCS'd; rest of log is in RCS file]
  * vix 01jan87 [added line-level error recovery]
  * vix 31dec86 [added /step to the from-to range, per bob@acornrc]
  * vix 30dec86 [written]
@@ -29,6 +24,10 @@ static char     rcsid[] = "$Id: entry.c,v 1.17 2004/01/23 18:56:42 vixie Exp $";
 
 #include <stralloc.h>
 #include "cron.h"
+
+#if !defined(lint) && !defined(LINT)
+static char     rcsid[] = "$Id: entry.c,v 1.1 2024-06-09 01:04:16+05:30 Cprogrammer Exp mbhangui $";
+#endif
 
 typedef enum ecode {
 	e_none, e_minute, e_hour, e_dom, e_month, e_dow,
@@ -299,7 +298,7 @@ load_entry(FILE *file, void (*error_func)(const char *), struct passwd *pw, char
 	}
 	if (!myenv_get("SHELL", e->envp)) {
 		if (myglue_string(&etmp, "SHELL", "=", _PATH_BSHELL) == -1) {
-			log_it1("SCHED", getpid(), "error", "can't set SHELL", errno);
+			log_it1("svcron", getpid(), "error", "can't set SHELL", errno);
 			ecode = e_memory;
 			goto eof;
 		}
@@ -311,7 +310,7 @@ load_entry(FILE *file, void (*error_func)(const char *), struct passwd *pw, char
 	}
 	if (!myenv_get("HOME", e->envp)) {
 		if (myglue_string(&etmp, "HOME", "=", pw->pw_dir) == -1) {
-			log_it1("SCHED", getpid(), "error", "can't set HOME", errno);
+			log_it1("svcron", getpid(), "error", "can't set HOME", errno);
 			ecode = e_memory;
 			goto eof;
 		}
@@ -325,7 +324,7 @@ load_entry(FILE *file, void (*error_func)(const char *), struct passwd *pw, char
 	/*- If login.conf is in used we will get the default PATH later. */
 	if (!myenv_get("PATH", e->envp)) {
 		if (myglue_string(&etmp, "PATH", "=", _PATH_DEFPATH) == -1) {
-			log_it1("SCHED", getpid(), "error", "can't set PATH", errno);
+			log_it1("svcron", getpid(), "error", "can't set PATH", errno);
 			ecode = e_memory;
 			goto eof;
 		}
@@ -337,7 +336,7 @@ load_entry(FILE *file, void (*error_func)(const char *), struct passwd *pw, char
 	}
 #endif /*- LOGIN_CAP */
 		if (myglue_string(&etmp, "LOGNAME", "=", pw->pw_name) == -1) {
-			log_it1("SCHED", getpid(), "error", "can't set LOGNAME", errno);
+			log_it1("svcron", getpid(), "error", "can't set LOGNAME", errno);
 			ecode = e_memory;
 			goto eof;
 		}
@@ -348,7 +347,7 @@ load_entry(FILE *file, void (*error_func)(const char *), struct passwd *pw, char
 	e->envp = tenvp;
 #if defined(BSD) || defined(__linux)
 		if (myglue_string(&etmp, "USER", "=", pw->pw_name) == -1) {
-			log_it1("SCHED", getpid(), "error", "can't set USER", errno);
+			log_it1("svcron", getpid(), "error", "can't set USER", errno);
 			ecode = e_memory;
 			goto eof;
 		}
@@ -609,3 +608,10 @@ getversion_entry_c()
 	const char     *x = rcsid;
 	x++;
 }
+
+/*
+ * $Log: entry.c,v $
+ * Revision 1.1  2024-06-09 01:04:16+05:30  Cprogrammer
+ * Initial revision
+ *
+ */

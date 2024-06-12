@@ -16,12 +16,12 @@
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#if !defined(lint) && !defined(LINT)
-static char     rcsid[] = "$Id: env.c,v 1.10 2004/01/23 18:56:42 vixie Exp $";
-#endif
-
 #include <stralloc.h>
 #include "cron.h"
+
+#if !defined(lint) && !defined(LINT)
+static char     rcsid[] = "$Id: env.c,v 1.1 2024-06-09 01:04:17+05:30 Cprogrammer Exp mbhangui $";
+#endif
 
 char          **
 myenv_init(void)
@@ -262,3 +262,10 @@ getversion_env_c()
 	const char     *x = rcsid;
 	x++;
 }
+
+/*-
+ * $Log: env.c,v $
+ * Revision 1.1  2024-06-09 01:04:17+05:30  Cprogrammer
+ * Initial revision
+ *
+ */

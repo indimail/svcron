@@ -1,5 +1,5 @@
 /*
- * $Id: globals.h,v 1.10 2004/01/23 19:03:33 vixie Exp $
+ * $Id: globals.h,v 1.2 2024-06-12 23:58:22+05:30 Cprogrammer Exp mbhangui $
  */
 
 /*
@@ -70,10 +70,18 @@ XTRN time_t     StartTime INIT(0);
 XTRN char      *Mailer INIT(NULL);
 XTRN int        DoFork INIT(0);
 XTRN int        verbose INIT(0);
+#ifdef LINUX
 XTRN const struct timespec ts_zero 
 #ifdef MAIN_PROGRAM
 = {.tv_sec = 0, .tv_nsec = 0}
 #endif
 ;
+#else
+XTRN const time_t ts_zero 
+#ifdef MAIN_PROGRAM
+= 0
+#endif
+;
+#endif
 
 #endif

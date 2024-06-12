@@ -4,9 +4,18 @@ if [ -n $PWD ] ; then
 else
 	d=$(basename `pwd`)
 fi
-mkdir -p $HOME/stage/$d
-cp -rp . $HOME/stage/$d-1.0
-cd $HOME/stage/$d-1.0
+if [ ! -f conf-version ] ; then
+	echo "conf-version: No such file or directory" 1>&2
+	exit 1
+fi
+version=$(cat conf-version)
+/bin/rm -rf $HOME/stage/$d-$version
+mkdir -p $HOME/stage/$d-$version
+cp -rp . $HOME/stage/$d-$version
+cd $HOME/stage/$d-$version
+if [ $? -ne 0 ] ; then
+	exit 1
+fi
 make clean
 make distclean
 if test -f $HOME/.rpmmacros
@@ -23,8 +32,8 @@ else
 fi
 /bin/rm -rf autom4te.cache
 cd ..
-tar cf - svcron-1.0 |gzip -c > $rpmbuild/SOURCES/svcron-1.0.tar.gz
-cd svcron-1.0
+tar cf - svcron-$version | gzip -c > $rpmbuild/SOURCES/svcron-$version.tar.gz
+cd svcron-$version
 rpmbuild -bb svcron
 if test $# -eq 1
 then

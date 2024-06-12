@@ -1,5 +1,5 @@
 /*
- * $Id: structs.h,v 1.7 2004/01/23 18:56:43 vixie Exp $
+ * $Id: structs.h,v 1.2 2024-06-12 23:58:28+05:30 Cprogrammer Exp mbhangui $
  */
 
 /*
@@ -52,13 +52,21 @@ typedef struct _entry {
 typedef struct _user {
 	struct _user   *next, *prev;	/* links */
 	char           *name;
+#ifdef LINUX
 	struct timespec mtim;		/* last modtime of crontab */
+#else
+	time_t          mtime;
+#endif
 	entry          *crontab;	/* this person's crontab */
 } user;
 
 typedef struct _cron_db {
 	user           *head, *tail;	/* links */
+#ifdef LINUX
 	struct timespec mtim;		/* last modtime on spooldir */
+#else
+	time_t          mtime;
+#endif
 } cron_db;
 /*
  * in the C tradition, we only create
