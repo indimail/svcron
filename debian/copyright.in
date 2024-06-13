@@ -1,0 +1,10 @@
+Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Source: http://www.ezmlm.org/
+Maintainer: @email@
+License: GPL-2
+
+Files: *
+Copyright: 1988,1990,1993,2021, Paul Vixie "VIXIE"
+Copyright: 2024, @email@
+Copyright: And many others
+License: GPL-2

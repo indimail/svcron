@@ -2,7 +2,9 @@
 
 COFLAGS=-z+05:30
 ACLOCAL_AMFLAGS=-I m4
-noinst_DATA = svcron.spec svcron.changes
+noinst_DATA = svcron.spec svcron.changes debian/changelog \
+			  debian/README.Debian debian/control debian/copyright \
+			  debian/svcron.dsc
 
 edit = sed \
 	-e 's}@PACKAGE\@}$(PACKAGE)}g' \
@@ -10,6 +12,7 @@ edit = sed \
 	-e 's}@version\@}$(VERSION)}g' \
 	-e "s|@release\@|"`cat conf-release`"|g" \
 	-e 's|@email\@|'"`cat conf-email`"'|g' \
+	-e 's|@date\@|'"`date -R`"'|g' \
 	-e 's}@pkgconfigdir\@}$(pkgconfigdir)}g' \
 	-e 's}@VERSION\@}$(VERSION)}g' \
 	-e 's}@localstatedir\@}$(localstatedir)}g' \
@@ -43,6 +46,17 @@ svcron.spec: svcron.spec.in catChangeLog doc/ChangeLog conf-version conf-release
 	(cat $@.in;./catChangeLog) | $(edit) > $@
 svcron.changes: doc/ChangeLog conf-version conf-release conf-email
 	./catChangeLog --changes doc/ChangeLog > $@
+debian/changelog: doc/ChangeLog conf-version conf-release conf-email
+	./catChangeLog --debian --name=svcron --state=unreleased \
+		--urgency=low doc/ChangeLog > $@
+debian/README.Debian: conf-email debian/README.Debian.in
+	(cat $@.in) | $(edit) > $@
+debian/control: conf-version conf-release conf-email debian/control.in
+	(cat $@.in) | $(edit) > $@
+debian/copyright: conf-email debian/copyright.in
+	(cat $@.in) | $(edit) > $@
+debian/svcron.dsc: conf-version conf-release conf-email debian/svcron.dsc.in
+	(cat $@.in) | $(edit) > $@
 
 install-data-hook:
 	$(mkinstalldirs) $(DESTDIR)$(datarootdir)/doc/svcron || exit 1

@@ -1,0 +1,14 @@
+Format: 3.0 (quilt)
+Source: svcron
+Section: Misc
+Priority: extra
+Binary: svcron
+Architecture: any
+Version: @version@-@release@
+Maintainer: Manvendra Bhangui <manvendra@indimail.org>
+Homepage: http://www.indimail.org
+Debtransform-Release: 1
+Debtransform-Files-Tar: debian.tar.gz
+Debtransform-Tar: svcron-@version@.tar.gz
+Standards-Version: 3.9.1
+Build-Depends: cdbs, debhelper (>= 7.0.50~), gcc, g++, automake, autoconf, m4, sed, libqmail-dev, lsb-release

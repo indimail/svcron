@@ -38,7 +38,6 @@ config.h.in
 .repo-build
 .repo-build.tmp
 crontabs
-debian
 svcron
 svcrontab
 svcron.8

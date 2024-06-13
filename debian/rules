@@ -1,0 +1,85 @@
+#!/usr/bin/make -f
+# See debhelper(7) (uncomment to enable)
+# output every command that modifies files on the build system.
+#export DH_VERBOSE = 1
+
+
+# see FEATURE AREAS in dpkg-buildflags(1)
+#export DEB_BUILD_MAINT_OPTIONS = hardening=+all
+
+# see ENVIRONMENT in dpkg-buildflags(1)
+# package maintainers to append CFLAGS
+#export DEB_CFLAGS_MAINT_APPEND  = -Wall -pedantic
+# package maintainers to append LDFLAGS
+#export DEB_LDFLAGS_MAINT_APPEND = -Wl,--as-needed
+CFLAGS=-g
+ifneq (,$(findstring noopt,$(DEB_BUILD_OPTIONS)))
+	CFLAGS += -O0 -fno-strict-aliasing -Wno-unused-result -Wno-unused-result
+else
+	CFLAGS += -O2 -fno-strict-aliasing -Wno-unused-result -Wno-unused-result
+endif
+
+prefix=/usr
+cp=/bin/cp
+rm=/bin/rm
+
+DESTDIR=$(CURDIR)/debian/svcron.tmp
+
+build: build-stamp
+build-stamp:
+	dh_testdir
+	#
+	# Extract source archives
+	#
+	#
+	# run configure script
+	#
+	./configure --prefix=${prefix} \
+		--enable-crondir=/etc/indimail/cron \
+		--enable-spooldir=crontabs \
+		--enable-syscrondir=/etc/indimail/cron/cron.d \
+		--enable-syscrontab=/etc/indimail/cron/crontab \
+		--mandir=${prefix}/share/man
+	#
+	# run make
+	#
+	$(MAKE) -s DESTDIR=$(DESTDIR)
+	touch build-stamp
+
+clean:
+	rm -f build-stamp configure-stamp
+	${rm} -rf $(DESTDIR)
+	$(MAKE) -s clean || true
+	dh_testdir
+	dh_testroot
+	dh_clean
+
+install: build
+	dh_testdir
+	dh_testroot
+	dh_prep || dh_clean -k
+	dh_installdirs
+	$(MAKE) -s install-strip DESTDIR=$(DESTDIR)
+
+binary-indep: build install
+	dh_testdir
+	dh_testroot
+	dh_install --sourcedir=$(DESTDIR) -psvcron
+	dh_installchangelogs
+	dh_installdocs
+	dh_link
+	dh_strip
+	dh_compress
+	dh_fixperms
+	dh_installdeb
+	dh_makeshlibs -V
+	dh_shlibdeps
+	dh_gencontrol
+	dh_md5sums
+	dh_builddeb
+
+# Build architecture-dependent files here. 
+binary-arch: build install
+
+binary: binary-indep binary-arch
+.PHONY: build clean binary-indep binary-arch binary install configure
