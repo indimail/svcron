@@ -26,6 +26,9 @@ copyright: ../conf-email copyright.in
 	(cat $@.in) | $(edit) > $@
 svcron.dsc: ../conf-version ../conf-release ../conf-email svcron.dsc.in
 	(cat $@.in) | $(edit) > $@
+changelog: ../doc/ChangeLog ../conf-version ../conf-release ../conf-email
+	cd ..; ./catChangeLog --debian --name=svcron --state=unreleased \
+		--urgency=low doc/ChangeLog > debian/$@; cd -
 
 debian.tar.gz: copyright rules changelog compat control \
 svcron.install svcron.docs README.Debian source/format
