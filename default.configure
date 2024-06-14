@@ -3,17 +3,17 @@ SYSTEM=$(uname -s)
 case "$SYSTEM" in
   FreeBSD)
   prefix=/usr/local
-  sysconfdir=/usr/local/etc/indimail
+  sysconfdir=/usr/local/etc
   mandir=/usr/local/man
   ;;
   Linux)
   prefix=/usr
-  sysconfdir=/etc/indimail
+  sysconfdir=/etc
   mandir=$prefix/share/man
   ;;
   Darwin)
   prefix=/usr/local
-  sysconfdir=/usr/local/etc/indimail
+  sysconfdir=/usr/local/etc
   mandir=/usr/local/share/man
   if [ -z "$CPPFLAGS" ] ; then
       export CPPFLAGS="-I/opt/local/include -I/opt/local/include/db48"
@@ -24,7 +24,7 @@ case "$SYSTEM" in
   ;;
   *)
   prefix=/usr
-  sysconfdir=/etc/indimail
+  sysconfdir=/etc
   mandir=/usr/man
   ;;
 esac

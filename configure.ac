@@ -1,7 +1,7 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 
-AC_PREREQ([2.71])
+AC_PREREQ([2.69])
 AC_INIT([svcron],m4_normalize(m4_include([conf-version])),m4_normalize(m4_include([conf-email])),svcron, [https://github.com/indimail/svcron])
 AC_CONFIG_SRCDIR([svcron.c])
 AC_CONFIG_HEADERS([config.h])

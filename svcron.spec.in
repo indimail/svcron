@@ -15,8 +15,6 @@
 %global debug_package      %{nil}
 %endif
 %global _prefix            @prefix@
-%global _sysconfdir        @prefix@/etc
-%global _localstatedir     @prefix@/var
 
 %if 0%{?suse_version}
 %global dist suse
@@ -39,23 +37,26 @@ License: GPLv3
 %endif
 Group: System Environment/Base
 Requires: rpm
-BuildRequires: gcc libqmail-devel
+BuildRequires: gcc libqmail-devel autoconf automake libtool sed m4
 Source0: http://downloads.sourceforge.net/indimail/%{name}-%{version}.tar.gz
 URL: https://github.com/indimail/svcron
 
 %description
-cron is a daemon that runs specified programs at scheduled times. This
+svcron is a daemon that runs specified programs at scheduled times. This
 package contains Paul Vixie's implementation of cron
 
 %prep
 %setup -q
 
 %build
+%{__mkdir_p} m4
+aclocal -I m4
+autoreconf -fis
 %configure --prefix=%{_prefix} \
-  --enable-crondir=%{_localstatedir}/cron \
+  --enable-crondir=%{_sysconfdir}/indimail/cron \
   --enable-spooldir=crontabs \
-  --enable-syscrondir=%{_sysconfdir}/cron.d \
-  --enable-syscrontab=%{_sysconfdir}/crontab \
+  --enable-syscrondir=%{_sysconfdir}/indimail/cron.d \
+  --enable-syscrontab=%{_sysconfdir}/indimail/crontab \
   --mandir=%{_prefix}/share/man
 
 %install
@@ -65,20 +66,37 @@ package contains Paul Vixie's implementation of cron
 %else
   %{__make} %{?_smp_mflags} DESTDIR=%{buildroot} install
 %endif
+%{__mkdir_p} %{buildroot}%{_sysconfdir}/indimail/cron
+%{__mkdir_p} %{buildroot}%{_sysconfdir}/indimail/cron/crontabs
+%{__mkdir_p} %{buildroot}%{_sysconfdir}/indimail/cron.d
 %if %{undefined nodebug}
   /bin/chmod -R 755 %{buildroot}%{_prefix}/bin
 %endif
 
 %files
 %defattr(-, root, root,-)
-%doc %attr(644,root,root)               %{_prefix}/share/man/man1/*
-%doc %attr(644,root,root)               %{_prefix}/share/man/man5/*
-%doc %attr(644,root,root)               %{_prefix}/share/man/man8/*
 %attr(755,root,root)                    %{_prefix}/sbin/svcron
 %attr(755,root,root)                    %{_prefix}/bin/svcrontab
+%dir        %attr(700,root,root )       %{_sysconfdir}/indimail/cron
+%dir        %attr(700,root,root )       %{_sysconfdir}/indimail/cron/crontabs
+%if %{undefined suse_version} && %{undefined sles_version}
+%if 0%{?centos_version} > 700 || 0%{?rhel_version} > 700 || 0%{?centos_ver} > 7 || 0%{?rhel} > 7 || 0%{?scientificlinux_version} > 700
+%ghost      %attr(700,root,root )       %{_sysconfdir}/indimail/cron/crontabs/*
+%endif
+%else
+%endif
+%if %{defined suse_version} && %{defined sles_version}
+%dir        %attr(755,root,root )       %{_sysconfdir}/indimail
+%endif
+            %attr(755,root,root )       %{_sysconfdir}/indimail/crontab
+%dir        %attr(755,root,root )       %{_sysconfdir}/indimail/cron.d
+%dir        %attr(755,root,root )       %{_prefix}/share/doc/svcron
 
+%doc        %attr(644,root,root)        %{_prefix}/share/man/man1/*
+%doc        %attr(644,root,root)        %{_prefix}/share/man/man5/*
+%doc        %attr(644,root,root)        %{_prefix}/share/man/man8/*
 %if %build_on_obs == 0
-%license %attr(0644,root,root)          %{_prefix}/share/doc/%{name}/LICENSE
+%license    %attr(0644,root,root)       %{_prefix}/share/doc/%{name}/LICENSE
 %else
 %attr(0644,root,root)                   %{_prefix}/share/doc/%{name}/LICENSE
 %endif

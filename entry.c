@@ -26,7 +26,7 @@
 #include "cron.h"
 
 #if !defined(lint) && !defined(LINT)
-static char     rcsid[] = "$Id: entry.c,v 1.1 2024-06-09 01:04:16+05:30 Cprogrammer Exp mbhangui $";
+static char     rcsid[] = "$Id: entry.c,v 1.2 2024-06-14 08:20:04+05:30 Cprogrammer Exp mbhangui $";
 #endif
 
 typedef enum ecode {
@@ -587,6 +587,7 @@ set_element(bitstr_t *bits, int low, int high, int number)
 static int
 set_range(bitstr_t *bits, int low, int high, int start, int stop, int step)
 {
+	int             i;
 
 	if (start < low || stop > high)
 		return (EOF);
@@ -596,7 +597,7 @@ set_range(bitstr_t *bits, int low, int high, int start, int stop, int step)
 	if (step == 1) {
 		bit_nset(bits, start, stop);
 	} else {
-		for (int i = start; i <= stop; i += step)
+		for (i = start; i <= stop; i += step)
 			bit_set(bits, i);
 	}
 	return (OK);
@@ -611,6 +612,9 @@ getversion_entry_c()
 
 /*
  * $Log: entry.c,v $
+ * Revision 1.2  2024-06-14 08:20:04+05:30  Cprogrammer
+ * declare variables outside for loop
+ *
  * Revision 1.1  2024-06-09 01:04:16+05:30  Cprogrammer
  * Initial revision
  *

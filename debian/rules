@@ -34,6 +34,7 @@ build-stamp:
 	#
 	# run configure script
 	#
+	autoreconf -fis
 	./configure --prefix=${prefix} \
 		--enable-crondir=/etc/indimail/cron \
 		--enable-spooldir=crontabs \

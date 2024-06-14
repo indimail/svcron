@@ -1,14 +1,16 @@
-Package: svcron
-Version: @version@-@release@
-Maintainer: @email@
-Recommends: default-mta | mail-transport-agent
-Provides: cron-daemon
+Source: svcron
 Section: admin
-Priority: important
-Multi-Arch: foreign
+Priority: optional
+Maintainer: @email@
+Standards-Version: 3.9.1
 Homepage: https://github.com/indimail/svcron
+Build-Depends: debhelper (>= 9), libqmail-dev
+
+Package: svcron
+Architecture: any
+Depends: ${shlibs:Depends}
 Description: process scheduling daemon
- The cron daemon is a background process that runs particular programs at
+ svcron daemon is a background process that runs particular programs at
  particular times (for example, every minute, day, week, or month), as
  specified in a crontab. By default, users may also create crontabs of
  their own so that processes are run on their behalf.

@@ -29,7 +29,7 @@
 #include "cron.h"
 
 #if !defined(lint) && !defined(LINT)
-static char     rcsid[] = "$Id: svcron.c,v 1.2 2024-06-12 23:58:33+05:30 Cprogrammer Exp mbhangui $";
+static char     rcsid[] = "$Id: svcron.c,v 1.3 2024-06-14 08:20:57+05:30 Cprogrammer Exp mbhangui $";
 #endif
 
 enum timejump { negative, small, medium, large };
@@ -261,6 +261,8 @@ find_jobs(int vtime, cron_db *db, int doWild, int doNonWild)
 {
 	const time_t    virtualSecond = vtime * SECONDS_PER_MINUTE;
 	const time_t    virtualTomorrow = virtualSecond + SECONDS_PER_DAY;
+	const entry    *e;
+	const user     *u;
 	struct tm       now = {0}, tom = {0};
 
 	gmtime_r(&virtualSecond, &now);
@@ -280,8 +282,8 @@ find_jobs(int vtime, cron_db *db, int doWild, int doNonWild)
 	 * like many bizarre things, it's the standard.
 	 */
 	const bool      is_lastdom = (tom.tm_mday == 1);
-	for (const user * u = db->head; u != NULL; u = u->next) {
-		for (const entry * e = u->crontab; e != NULL; e = e->next) {
+	for (u = db->head; u != NULL; u = u->next) {
+		for (e = u->crontab; e != NULL; e = e->next) {
 			bool            thisdom = bit_test(e->dom, dom) || (is_lastdom && (e->flags & DOM_LAST) != 0);
 			bool            thisdow = bit_test(e->dow, dow);
 			if (bit_test(e->minute, minute) && bit_test(e->hour, hour) &&
@@ -402,6 +404,9 @@ getversion_svcron_c()
 
 /*-
  * $Log: svcron.c,v $
+ * Revision 1.3  2024-06-14 08:20:57+05:30  Cprogrammer
+ * declare variables outside for loop
+ *
  * Revision 1.2  2024-06-12 23:58:33+05:30  Cprogrammer
  * darwin port
  *
