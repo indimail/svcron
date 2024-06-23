@@ -1,5 +1,5 @@
 /*
- * $Id: funcs.h,v 1.1 2024-06-09 01:05:14+05:30 Cprogrammer Exp mbhangui $
+ * $Id: funcs.h,v 1.2 2024-06-23 23:49:46+05:30 Cprogrammer Exp mbhangui $
  */
 
 /*
@@ -33,8 +33,8 @@ void		set_cron_uid(void),
 		load_database(cron_db *, char *),
 		open_logfile(void),
 		sigpipe_func(void),
-		job_add(const entry *, const user *),
-		do_command(const entry *, const user *),
+		job_add(entry *, const user *),
+		do_command(entry *, const user *),
 		link_user(cron_db *, user *),
 		unlink_user(cron_db *, user *),
 		free_user(user *),
@@ -46,7 +46,7 @@ void		set_cron_uid(void),
 		log_it2(const char *, int, const char *, const char *),
 		log_close(void),
 		die_nomem(char *);
-void            sigchld_reaper(char *);
+void            sigchld_reaper(char *, const entry *);
 
 int		job_runqueue(void),
 		get_char(FILE *),

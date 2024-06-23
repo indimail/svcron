@@ -29,7 +29,7 @@
 #include "cron.h"
 
 #if !defined(lint) && !defined(LINT)
-static char     rcsid[] = "$Id: svcron.c,v 1.3 2024-06-14 08:20:57+05:30 Cprogrammer Exp mbhangui $";
+static char     rcsid[] = "$Id: svcron.c,v 1.4 2024-06-23 23:51:04+05:30 Cprogrammer Exp mbhangui $";
 #endif
 
 enum timejump { negative, small, medium, large };
@@ -235,7 +235,7 @@ main(int argc, char *argv[])
 		}
 		if (got_sigchld) {
 			got_sigchld = 0;
-			sigchld_reaper("child");
+			sigchld_reaper("child", NULL);
 		}
 		load_database(&database, dbdir);
 	}
@@ -261,7 +261,7 @@ find_jobs(int vtime, cron_db *db, int doWild, int doNonWild)
 {
 	const time_t    virtualSecond = vtime * SECONDS_PER_MINUTE;
 	const time_t    virtualTomorrow = virtualSecond + SECONDS_PER_DAY;
-	const entry    *e;
+	entry          *e;
 	const user     *u;
 	struct tm       now = {0}, tom = {0};
 
@@ -342,7 +342,7 @@ cron_sleep(int target)
 			got_sighup = 0;
 		if (got_sigchld) {
 			got_sigchld = 0;
-			sigchld_reaper("child");
+			sigchld_reaper("child", NULL);
 		}
 		t2 = time(NULL) + GMToff;
 		seconds_to_wait -= (int) (t2 - t1);
@@ -404,6 +404,9 @@ getversion_svcron_c()
 
 /*-
  * $Log: svcron.c,v $
+ * Revision 1.4  2024-06-23 23:51:04+05:30  Cprogrammer
+ * added entry argument to sigchld_reaper function
+ *
  * Revision 1.3  2024-06-14 08:20:57+05:30  Cprogrammer
  * declare variables outside for loop
  *

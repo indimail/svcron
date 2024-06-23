@@ -1,5 +1,5 @@
 /*
- * $Id: structs.h,v 1.2 2024-06-12 23:58:28+05:30 Cprogrammer Exp mbhangui $
+ * $Id: structs.h,v 1.3 2024-06-23 23:50:49+05:30 Cprogrammer Exp mbhangui $
  */
 
 /*
@@ -21,11 +21,13 @@
 
 #ifndef _STRUCTS_H
 #define _STRUCTS_H
+#include <sys/types.h>
 typedef struct _entry {
 	struct _entry  *next;
 	struct passwd  *pwd;
 	char          **envp;
 	char           *cmd;
+	pid_t           ppid;
 	bitstr_t        bit_decl(minute, MINUTE_COUNT);
 	bitstr_t        bit_decl(hour, HOUR_COUNT);
 	bitstr_t        bit_decl(dom, DOM_COUNT);

@@ -28,14 +28,14 @@
 #define WARN  "svcron: warn: "
 
 #if !defined(lint) && !defined(LINT)
-static char     rcsid[] = "$Id: do_command.c,v 1.1 2024-06-12 20:27:21+05:30 Cprogrammer Exp mbhangui $";
+static char     rcsid[] = "$Id: do_command.c,v 1.2 2024-06-23 23:49:38+05:30 Cprogrammer Exp mbhangui $";
 #endif
 
-static void     child_process(const entry *, const user *);
+static void     child_process(entry *, const user *);
 static int      safe_p(const char *, const char *);
 
 void
-do_command(const entry *e, const user *u)
+do_command(entry *e, const user *u)
 {
 	/*
 	 * fork to become asynchronous -- parent process is done immediately,
@@ -61,8 +61,36 @@ do_command(const entry *e, const user *u)
 	}
 }
 
+static void
+print_command(const entry *e)
+{
+	char           *x;
+
+	if (!e)
+		return;
+	for (x = e->cmd; *x; x++) {
+		if (*x < ' ') { /*- control char */
+			if (substdio_put(subfderr, "^", 1) == -1)
+				strerr_die2sys(111, FATAL, "grandchild: unable to write to descriptor 2: ");
+			*x += '@';
+			if (substdio_put(subfderr, x, 1) == -1)
+				strerr_die2sys(111, FATAL, "grandchild: unable to write to descriptor 2: ");
+		} else
+		if (*x < 0177) { /* printable */
+			if (substdio_put(subfderr, x, 1) == -1)
+				strerr_die2sys(111, FATAL, "grandchild: unable to write to descriptor 2: ");
+		} else
+		if (*x == 0177) { /* delete/rubout */
+			if (substdio_put(subfderr, "^?", 2) == -1)
+				strerr_die2sys(111, FATAL, "grandchild: unable to write to descriptor 2: ");
+		} else
+		if (subprintf(subfderr, "\\%03o", *x) == -1)
+			strerr_die2sys(111, FATAL, "grandchild: unable to write to descriptor 2: ");
+	}
+}
+
 void
-sigchld_reaper(char *ident)
+sigchld_reaper(char *ident, const entry *e)
 {
 	int             status;
 	pid_t           pid;
@@ -77,33 +105,63 @@ sigchld_reaper(char *ident)
 		if (pid == -1 && errno == error_child)
 			break;
 		if (WIFSTOPPED(status) || WIFCONTINUED(status)) {
-			if (verbose)
+			if (!verbose)
+				continue;
+			if (!e) {
 				if (subprintf(subfderr, "%s: %-10s pid %10d %s by signal %d\n",
 						ProgramName, ident, pid, WIFSTOPPED(status) ? "stopped" : "started",
 						WIFSTOPPED(status) ? WSTOPSIG(status) : SIGCONT) == -1)
 					strerr_die2sys(111, FATAL, "unable to write to descriptor 2: ");
+				continue;
+			}
+			if (subprintf(subfderr, "%s: %-10s pid %10d %s by signal %d command[",
+					ProgramName, ident, pid, WIFSTOPPED(status) ? "stopped" : "started",
+					WIFSTOPPED(status) ? WSTOPSIG(status) : SIGCONT) == -1)
+				strerr_die2sys(111, FATAL, "unable to write to descriptor 2: ");
+			print_command(e);
+			if (subprintf(subfderr, "] ppid %d\n", e->ppid) == -1)
+				strerr_die2sys(111, FATAL, "grandchild: unable to write to descriptor 2: ");
 			continue;
 		} else
 		if (WIFSIGNALED(status)) {
-			if (verbose)
+			if (!verbose)
+				continue;
+			if (!e) {
 				if (subprintf(subfderr, "%s: %-10s pid %10d killed by signal %d\n",
 						ProgramName, ident, pid, WTERMSIG(status)) == -1)
 					strerr_die2sys(111, FATAL, "unable to write to descriptor 2: ");
+				continue;
+			}
+			if (subprintf(subfderr, "%s: %-10s pid %10d killed by signal %d command[",
+					ProgramName, ident, pid, WTERMSIG(status)) == -1)
+				strerr_die2sys(111, FATAL, "unable to write to descriptor 2: ");
+			print_command(e);
+			if (subprintf(subfderr, "] ppid %d\n", e->ppid) == -1)
+				strerr_die2sys(111, FATAL, "grandchild: unable to write to descriptor 2: ");
 		} else
 		if (WIFEXITED(status)) {
-			if (verbose)
+			if (!verbose)
+				continue;
+			if (!e) {
 				if (subprintf(subfderr, "%s: %-10s pid %10d: normal exit return status %d\n",
 						ProgramName, ident, pid, WEXITSTATUS(status)) == -1)
 					strerr_die2sys(111, FATAL, "unable to write to descriptor 2: ");
+				continue;
+			}
+			if (subprintf(subfderr, "%s: %-10s pid %10d: normal exit return status %d command[",
+					ProgramName, ident, pid, WEXITSTATUS(status)) == -1)
+				strerr_die2sys(111, FATAL, "unable to write to descriptor 2: ");
+			print_command(e);
+			if (subprintf(subfderr, "] ppid %d\n", e->ppid) == -1)
+				strerr_die2sys(111, FATAL, "grandchild: unable to write to descriptor 2: ");
 		}
-		break;
 	} /*- for (; pid = waitpid(-1, &status, WNOHANG | WUNTRACED);) -*/
 	if (verbose && substdio_flush(subfderr) == -1)
 		strerr_die2sys(111, FATAL, "unable to write to descriptor 2: ");
 }
 
 static void
-child_process(const entry *e, const user *u)
+child_process(entry *e, const user *u)
 {
 	int             stdin_pipe[2], stdout_pipe[2], r;
 	char           *input_data, *usernm, *mailto, *x;
@@ -181,31 +239,14 @@ child_process(const entry *e, const user *u)
 		 * the actual user command shell was going to get and the
 		 * PID is part of the log message.
 		 */
-		if ((e->flags & DONT_LOG) == 0) {
-			if (verbose && subprintf(subfderr, "%s: grandchild pid %10d: user %s command[", ProgramName, getpid(), usernm) == -1)
+		e->ppid = getppid();
+		if ((e->flags & DONT_LOG) == 0 && verbose) {
+			if (subprintf(subfderr, "%s: grandchild pid %10d: user %s command[", ProgramName, getpid(), usernm) == -1)
 				strerr_die2sys(111, FATAL, "unable to write to descriptor 2: ");
-			for (x = e->cmd; *x; x++) {
-				if (*x < ' ') { /*- control char */
-					if (verbose && substdio_put(subfderr, "^", 1) == -1)
-						strerr_die2sys(111, FATAL, "grandchild: unable to write to descriptor 2: ");
-					*x += '@';
-					if (verbose && substdio_put(subfderr, x, 1) == -1)
-						strerr_die2sys(111, FATAL, "grandchild: unable to write to descriptor 2: ");
-				} else
-				if (*x < 0177) { /* printable */
-					if (verbose && substdio_put(subfderr, x, 1) == -1)
-						strerr_die2sys(111, FATAL, "grandchild: unable to write to descriptor 2: ");
-				} else
-				if (*x == 0177) { /* delete/rubout */
-					if (verbose && substdio_put(subfderr, "^?", 2) == -1)
-						strerr_die2sys(111, FATAL, "grandchild: unable to write to descriptor 2: ");
-				} else
-				if (verbose && subprintf(subfderr, "\\%03o", *x) == -1)
-					strerr_die2sys(111, FATAL, "grandchild: unable to write to descriptor 2: ");
-			}
-			if (verbose && substdio_put(subfderr, "]\n", 2) == -1)
+			print_command(e);
+			if (subprintf(subfderr, "] ppid %d\n", getppid()) == -1)
 				strerr_die2sys(111, FATAL, "grandchild: unable to write to descriptor 2: ");
-			if (verbose && substdio_flush(subfderr))
+			if (substdio_flush(subfderr))
 				strerr_die2sys(111, FATAL, "grandchild: unable to write to descriptor 2: ");
 		}
 
@@ -556,7 +597,7 @@ child_process(const entry *e, const user *u)
 
 	/* wait for children to die. */
 	for (; children > 0; children--)
-		sigchld_reaper("grandchild");
+		sigchld_reaper("grandchild", e);
 }
 
 static int
@@ -584,6 +625,9 @@ getversion_do_command_c()
 
 /*-
  * $Log: do_command.c,v $
+ * Revision 1.2  2024-06-23 23:49:38+05:30  Cprogrammer
+ * refactored child handling
+ *
  * Revision 1.1  2024-06-12 20:27:21+05:30  Cprogrammer
  * Initial revision
  *
