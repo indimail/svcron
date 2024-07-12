@@ -42,6 +42,6 @@ svcron
 svcrontab
 svcron.8
 svcrontab.1
-crontab.5
+svcrontab.5
 RCS
 ChangeLog

@@ -78,7 +78,7 @@ by any user other than root. In other words, it should be mode 0700.
 
 .SH "SEE ALSO"
 .IR svcrontab(1),
-.IR crontab(5),
+.IR svcrontab(5),
 .IR svscan(8),
 .IR supervise(8)
 

@@ -143,5 +143,5 @@ AC_SUBST(syscrondir)
 AC_SUBST(spooldir)
 AC_SUBST(sendmail)
 
-AC_CONFIG_FILES([svcron.8 svcrontab.1 crontab.5 Makefile])
+AC_CONFIG_FILES([svcron.8 svcrontab.1 svcrontab.5 Makefile])
 AC_OUTPUT

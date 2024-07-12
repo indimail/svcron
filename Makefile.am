@@ -24,7 +24,7 @@ INSTALL_SCRIPT = ${INSTALL}           -c
 install_sh_SCRIPT = $(install_sh)     -c
 INSTALL_STRIP_PROGRAM = $(install_sh) -c $(STRIP_OPT)
 
-man_MANS = svcron.8 svcrontab.1 crontab.5
+man_MANS = svcron.8 svcrontab.1 svcrontab.5
 doc_list = AUTHORS ChangeLog LICENSE
 
 svcronbindir=@prefix@/bin
