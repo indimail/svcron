@@ -17,6 +17,9 @@ jobs:
     steps:
     - name: checkout_svcron
       uses: actions/checkout@v2
+      with:
+        path: svcron
+
     - name: checkout_qmail
       uses: actions/checkout@v2
       with:
@@ -27,13 +30,20 @@ jobs:
       run: |
         sudo apt-get update; sudo apt-get install libssl-dev
         cd libqmail; ./default.configure; make; sudo make install-strip
+
+    - name: build_svcron
+      run: |
+        cd svcron
+        ./default.configure; make
+
     - name: prepare obs
-      run: ./prepare_obs svcron
-    - uses: actions/upload-artifact@v2
+      run: cd svcron; ./prepare_obs svcron
+    - uses: actions/upload-artifact@v4
       with:
         name: svcron
         path: ~/stage
     - shell: bash
+
       name: trigger_obs
       run: |
         # create ssh environment
@@ -53,7 +63,7 @@ jobs:
         echo "${{secrets.software_passphrase}}" | gpg2 --pinentry-mode loopback \
           --passphrase-fd 0 --default-key "${{secrets.software_user}}" \
           -o svcron-obs.sig --detach-sig $GITHUB_WORKSPACE/svcron-obs.tar.gz
-        # copy to /home/frs/project/indimail
+        # copy to /home/frs/project/indimail/github
         scp -q -i ~/.private_key $GITHUB_WORKSPACE/svcron-obs.tar.gz \
           ~/stage/svcron-obs.sig "${{secrets.sf_user}}:${{secrets.sf_upload_path}}"
         rm -f ~/.private_key ~/.ssh/known_hosts $GITHUB_WORKSPACE/svcron-obs.tar.gz

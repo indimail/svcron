@@ -76,6 +76,7 @@ if [ -f default.configure -a ! -f ./configure -o ! -f ./Makefile ] ; then
   ./default.configure >/dev/null 2>&1
 fi
 
+mkdir -p debian
 if [ ! -f $name.changes ] ; then
   make $name.changes
 fi

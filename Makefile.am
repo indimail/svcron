@@ -2,7 +2,6 @@
 
 COFLAGS=-z+05:30
 ACLOCAL_AMFLAGS=-I m4
-noinst_DATA = svcron.spec svcron.changes debian/changelog
 
 edit = sed \
 	-e 's}@PACKAGE\@}$(PACKAGE)}g' \

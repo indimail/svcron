@@ -16,6 +16,7 @@ cd $HOME/stage/$d-$version
 if [ $? -ne 0 ] ; then
 	exit 1
 fi
+make svcron.spec
 make clean
 make distclean
 if test -f $HOME/.rpmmacros
@@ -32,7 +33,12 @@ else
 fi
 /bin/rm -rf autom4te.cache
 cd ..
-tar cf - svcron-$version | gzip -c > $rpmbuild/SOURCES/svcron-$version.tar.gz
+tar \
+	--exclude="svcron-$version/.git" \
+	--exclude="svcron-$version/RCS" \
+	--exclude="svcron-$version/debian" \
+	--exclude="svcron-$version/crontabs" \
+	-cf - svcron-$version | gzip -c > $rpmbuild/SOURCES/svcron-$version.tar.gz
 cd svcron-$version
 rpmbuild -bb svcron
 if test $# -eq 1
