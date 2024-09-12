@@ -7,3 +7,6 @@ Release @version@-@release@ Start 04/06/2024 End XX/XX/XXXX
 3. made CRON_ALLOW, CRON_DENY absolute
 - 15/06/2024
 4. multiple fixes for build to succeed on open build service
+- 12/09/2024
+5. renamed crontab.5 man page to svcrontab.6
+6. entry.c: Fix CVE-2024-43688, buffer underflow for very large step values

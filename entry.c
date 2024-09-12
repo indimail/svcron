@@ -26,7 +26,7 @@
 #include "cron.h"
 
 #if !defined(lint) && !defined(LINT)
-static char     rcsid[] = "$Id: entry.c,v 1.2 2024-06-14 08:20:04+05:30 Cprogrammer Exp mbhangui $";
+static char     rcsid[] = "$Id: entry.c,v 1.3 2024-09-12 18:48:25+05:30 Cprogrammer Exp mbhangui $";
 #endif
 
 typedef enum ecode {
@@ -545,7 +545,10 @@ get_number(int *numptr, int low, const char *names[], int ch, FILE *file, const 
 		/*- got a number, check for valid terminator */
 		if (!strchr(terms, ch))
 			goto bad;
-		*numptr = atoi(temp);
+		i = atoi(temp);
+		if (i < 0)
+			goto bad;
+		*numptr = i;
 		return (ch);
 	}
 
@@ -594,7 +597,7 @@ set_range(bitstr_t *bits, int low, int high, int start, int stop, int step)
 	start -= low;
 	stop -= low;
 
-	if (step == 1) {
+	if (step <= 1 || step > stop) {
 		bit_nset(bits, start, stop);
 	} else {
 		for (i = start; i <= stop; i += step)
@@ -612,6 +615,9 @@ getversion_entry_c()
 
 /*
  * $Log: entry.c,v $
+ * Revision 1.3  2024-09-12 18:48:25+05:30  Cprogrammer
+ * Fix CVE-2024-43688, buffer underflow for very large step values
+ *
  * Revision 1.2  2024-06-14 08:20:04+05:30  Cprogrammer
  * declare variables outside for loop
  *
