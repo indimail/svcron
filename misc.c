@@ -29,7 +29,7 @@
 #include "cron.h"
 
 #if !defined(lint) && !defined(LINT)
-static char     rcsid[] = "$Id: misc.c,v 1.1 2024-06-09 01:04:21+05:30 Cprogrammer Exp mbhangui $";
+static char     rcsid[] = "$Id: misc.c,v 1.2 2024-09-13 09:26:18+05:30 Cprogrammer Exp mbhangui $";
 #endif
 
 #define FATAL "svcron: fatal: "
@@ -294,7 +294,7 @@ get_lock(char **pidfile, const char *sdir, const char *dbdir)
 	if ((fdsource = open(".", O_RDONLY|O_NDELAY, 0)) == -1)
 		strerr_die2sys(111, FATAL, "unable to open current directory: ");
 	/*-
-	 * let us find out if the process is svscan we will
+	 * let us find out if the process is svcron we will
 	 * use the /proc filesystem to figure out command name
 	 */
 	if (chdir("/proc") == -1) /*- on systems without /proc filesystem, give up */
@@ -332,7 +332,7 @@ get_lock(char **pidfile, const char *sdir, const char *dbdir)
 		strerr_warn5(FATAL, "[", buf, "] ", "already running", 0);
 		_exit (111);
 	}
-	/*- some non-svscan process is running with pid */
+	/*- some non-svcron process is running with pid */
 	if (fchdir(fdsource) == -1)
 		strerr_die4sys(111, FATAL, "unable to switch back to ", sdir, ": ");
 	close(fdsource);
@@ -520,7 +520,7 @@ log_it2(const char *username, pid_t xpid, const char *event, const char *detail)
 	}
 
 	/*-
-	 * we have to sprintf() it because fprintf() doesn't always write
+	 * we have to qsprintf() it because fprintf() doesn't always write
 	 * everything out in one chunk and this has to be atomically appended
 	 * to the log file.
 	 */
@@ -528,10 +528,9 @@ log_it2(const char *username, pid_t xpid, const char *event, const char *detail)
 			username, t->tm_mday, t->tm_mon+1, t->tm_year + 1900,
 			t->tm_hour, t->tm_min, t->tm_sec, pid, event, detail);
 
-	/*- we have to run strlen() because sprintf() returns (char*) on old BSD */
-	if (LogFD < OK || write(LogFD, msg.s, msg.len) < OK) {
+	if (LogFD < OK || write(LogFD, msg.s, msg.len - 1) < OK) {
 		strerr_warn4(WARN, "can't write to log file ", LOG_FILE, ": ", &strerr_sys);
-		substdio_put(subfderr, msg.s, msg.len);
+		substdio_put(subfderr, msg.s, msg.len - 1);
 		substdio_flush(subfderr);
 	}
 }
@@ -738,6 +737,9 @@ getversion_misc_c()
 
 /*-
  * $Log: misc.c,v $
+ * Revision 1.2  2024-09-13 09:26:18+05:30  Cprogrammer
+ * fixed extra null character in log
+ *
  * Revision 1.1  2024-06-09 01:04:21+05:30  Cprogrammer
  * Initial revision
  *

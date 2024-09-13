@@ -10,3 +10,5 @@ Release @version@-@release@ Start 04/06/2024 End XX/XX/XXXX
 - 12/09/2024
 5. renamed crontab.5 man page to svcrontab.6
 6. entry.c: Fix CVE-2024-43688, buffer underflow for very large step values
+- 13/09/2024
+7. misc.c: fixed extra null character getting into log

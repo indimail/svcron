@@ -552,7 +552,7 @@ get_number(int *numptr, int low, const char *names[], int ch, FILE *file, const 
 		return (ch);
 	}
 
-			 /*- no numbers, look for a string if we have any */
+	/*- no numbers, look for a string if we have any */
 	if (names) {
 		while (isalpha((unsigned char) ch)) {
 			if (++len >= MAX_TEMPSTR)
