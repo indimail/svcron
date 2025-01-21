@@ -397,7 +397,7 @@ child_process(entry *e, const user *u)
 		 * are part of its reference count now.
 		 */
 		close(stdout_pipe[READ_PIPE]);
-		substdio_fdbuf(&ssout, write, stdin_pipe[WRITE_PIPE], ssoutbuf, sizeof(ssoutbuf));
+		substdio_fdbuf(&ssout, (ssize_t (*)(int,  char *, size_t)) write, stdin_pipe[WRITE_PIPE], ssoutbuf, sizeof(ssoutbuf));
 
 		/*
 		 * translation:
@@ -456,7 +456,7 @@ child_process(entry *e, const user *u)
 		char            ch;
 		int             c;
 
-		substdio_fdbuf(&ssin, read, stdout_pipe[READ_PIPE], ssinbuf, sizeof(ssinbuf));
+		substdio_fdbuf(&ssin, (ssize_t (*)(int,  char *, size_t)) read, stdout_pipe[READ_PIPE], ssinbuf, sizeof(ssinbuf));
 
 		c = substdio_get(&ssin, &ch, 1);
 		if (c == 1) {

@@ -389,7 +389,7 @@ edit_cmd(void)
 again:
 	rewind(NewCrontab);
 	if (ferror(NewCrontab)) {
-		subprintf(subfderr, "%s: error while writing new crontab to %s: %s\n", ProgramName, Filename, strerror(errno));
+		subprintf(subfderr, "%s: error while writing new crontab to %s: %s\n", ProgramName, Filename.s, strerror(errno));
 		substdio_flush(subfderr);
 fatal:
 		unlink(Filename.s);
