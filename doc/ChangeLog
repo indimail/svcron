@@ -12,3 +12,5 @@ Release @version@-@release@ Start 04/06/2024 End XX/XX/XXXX
 6. entry.c: Fix CVE-2024-43688, buffer underflow for very large step values
 - 13/09/2024
 7. misc.c: fixed extra null character getting into log
+- 22/01/2025
+8. fix gcc14 errors

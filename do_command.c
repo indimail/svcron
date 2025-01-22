@@ -28,7 +28,7 @@
 #define WARN  "svcron: warn: "
 
 #if !defined(lint) && !defined(LINT)
-static char     rcsid[] = "$Id: do_command.c,v 1.2 2024-06-23 23:49:38+05:30 Cprogrammer Exp mbhangui $";
+static char     rcsid[] = "$Id: do_command.c,v 1.3 2025-01-22 17:57:24+05:30 Cprogrammer Exp mbhangui $";
 #endif
 
 static void     child_process(entry *, const user *);
@@ -625,6 +625,9 @@ getversion_do_command_c()
 
 /*-
  * $Log: do_command.c,v $
+ * Revision 1.3  2025-01-22 17:57:24+05:30  Cprogrammer
+ * fixes for gcc14 errors
+ *
  * Revision 1.2  2024-06-23 23:49:38+05:30  Cprogrammer
  * refactored child handling
  *
