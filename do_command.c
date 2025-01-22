@@ -28,7 +28,7 @@
 #define WARN  "svcron: warn: "
 
 #if !defined(lint) && !defined(LINT)
-static char     rcsid[] = "$Id: do_command.c,v 1.2 2024-06-23 23:49:38+05:30 Cprogrammer Exp mbhangui $";
+static char     rcsid[] = "$Id: do_command.c,v 1.3 2025-01-22 17:57:24+05:30 Cprogrammer Exp mbhangui $";
 #endif
 
 static void     child_process(entry *, const user *);
@@ -397,7 +397,7 @@ child_process(entry *e, const user *u)
 		 * are part of its reference count now.
 		 */
 		close(stdout_pipe[READ_PIPE]);
-		substdio_fdbuf(&ssout, write, stdin_pipe[WRITE_PIPE], ssoutbuf, sizeof(ssoutbuf));
+		substdio_fdbuf(&ssout, (ssize_t (*)(int,  char *, size_t)) write, stdin_pipe[WRITE_PIPE], ssoutbuf, sizeof(ssoutbuf));
 
 		/*
 		 * translation:
@@ -456,7 +456,7 @@ child_process(entry *e, const user *u)
 		char            ch;
 		int             c;
 
-		substdio_fdbuf(&ssin, read, stdout_pipe[READ_PIPE], ssinbuf, sizeof(ssinbuf));
+		substdio_fdbuf(&ssin, (ssize_t (*)(int,  char *, size_t)) read, stdout_pipe[READ_PIPE], ssinbuf, sizeof(ssinbuf));
 
 		c = substdio_get(&ssin, &ch, 1);
 		if (c == 1) {
@@ -625,6 +625,9 @@ getversion_do_command_c()
 
 /*-
  * $Log: do_command.c,v $
+ * Revision 1.3  2025-01-22 17:57:24+05:30  Cprogrammer
+ * fixes for gcc14 errors
+ *
  * Revision 1.2  2024-06-23 23:49:38+05:30  Cprogrammer
  * refactored child handling
  *

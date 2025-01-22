@@ -52,7 +52,7 @@ package contains Paul Vixie's implementation of cron
 %{__mkdir_p} m4
 aclocal -I m4
 autoreconf -fis
-%configure --prefix=%{_prefix} \
+%configure --prefix=%{_prefix} --sbindir=%{_prefix}/sbin \
   --enable-crondir=%{_sysconfdir}/indimail/cron \
   --enable-spooldir=crontabs \
   --enable-syscrondir=%{_sysconfdir}/indimail/cron.d \

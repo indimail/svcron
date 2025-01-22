@@ -32,7 +32,7 @@
 #include "cron.h"
 
 #if !defined(lint) && !defined(LINT)
-static char     rcsid[] = "$Id: svcrontab.c,v 1.1 2024-06-09 01:04:28+05:30 Cprogrammer Exp mbhangui $";
+static char     rcsid[] = "$Id: svcrontab.c,v 1.2 2025-01-22 17:57:44+05:30 Cprogrammer Exp mbhangui $";
 #endif
 
 #define FATAL "svcrontab: fatal: "
@@ -389,7 +389,7 @@ edit_cmd(void)
 again:
 	rewind(NewCrontab);
 	if (ferror(NewCrontab)) {
-		subprintf(subfderr, "%s: error while writing new crontab to %s: %s\n", ProgramName, Filename, strerror(errno));
+		subprintf(subfderr, "%s: error while writing new crontab to %s: %s\n", ProgramName, Filename.s, strerror(errno));
 		substdio_flush(subfderr);
 fatal:
 		unlink(Filename.s);
@@ -685,6 +685,9 @@ getversion_crontab_c()
 
 /*-
  * $Log: svcrontab.c,v $
+ * Revision 1.2  2025-01-22 17:57:44+05:30  Cprogrammer
+ * fix argument to subprintf
+ *
  * Revision 1.1  2024-06-09 01:04:28+05:30  Cprogrammer
  * Initial revision
  *
