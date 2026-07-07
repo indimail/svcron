@@ -1,7 +1,7 @@
 prefix=/usr
 version=$(shell cat ../conf-version)
 release=$(shell cat ../conf-release)
-email="$(shell cat ../conf-email)"
+email=$(shell cat ../conf-email)
 date=`date -R`
 
 edit = sed \
