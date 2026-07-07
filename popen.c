@@ -47,7 +47,7 @@
 #if 0
 static          sccsid[] = "@(#)popen.c	8.3 (Berkeley) 4/6/94";
 #else
-static char     rcsid[] = "$Id: popen.c,v 1.1 2024-06-09 01:04:23+05:30 Cprogrammer Exp mbhangui $";
+static char     rcsid[] = "$Id: popen.c,v 1.2 2026-07-07 17:43:25+05:30 Cprogrammer Exp mbhangui $";
 #endif
 #endif /* not lint */
 
@@ -184,22 +184,28 @@ svcron_pclose(FILE *iop)
 	if (pid < 0)
 		return (pid);
 	if (WIFSTOPPED(status) || WIFCONTINUED(status)) {
-		if (verbose)
+		if (verbose) {
 			subprintf(subfderr, "%s: %-10s pid %10d %s by signal %d\n",
 					ProgramName, "mail", pid, WIFSTOPPED(status) ? "stopped" : "started",
 					WIFSTOPPED(status) ? WSTOPSIG(status) : SIGCONT);
+			substdio_flush(subfderr);
+		}
 		return (1);
 	} else
 	if (WIFSIGNALED(status)) {
-		if (verbose)
+		if (verbose) {
 			subprintf(subfderr, "%s: %-10s pid %10d killed by signal %d\n",
 					ProgramName, "mail", pid, WTERMSIG(status));
+			substdio_flush(subfderr);
+		}
 		return (1);
 	} else
 	if (WIFEXITED(status)) {
-		if (verbose)
+		if (verbose) {
 			subprintf(subfderr, "%s: %-10s pid %10d: normal exit return status %d\n",
 					ProgramName, "mail", pid, WEXITSTATUS(status));
+			substdio_flush(subfderr);
+		}
 		return (WEXITSTATUS(status));
 	}
 	return (1);
@@ -214,6 +220,9 @@ getversion_popen_c()
 
 /*-
  * $Log: popen.c,v $
+ * Revision 1.2  2026-07-07 17:43:25+05:30  Cprogrammer
+ * flush error messages
+ *
  * Revision 1.1  2024-06-09 01:04:23+05:30  Cprogrammer
  * Initial revision
  *

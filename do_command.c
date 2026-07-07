@@ -28,7 +28,7 @@
 #define WARN  "svcron: warn: "
 
 #if !defined(lint) && !defined(LINT)
-static char     rcsid[] = "$Id: do_command.c,v 1.3 2025-01-22 17:57:24+05:30 Cprogrammer Exp mbhangui $";
+static char     rcsid[] = "$Id: do_command.c,v 1.4 2026-07-07 17:43:13+05:30 Cprogrammer Exp mbhangui $";
 #endif
 
 static void     child_process(entry *, const user *);
@@ -112,6 +112,8 @@ sigchld_reaper(char *ident, const entry *e)
 						ProgramName, ident, pid, WIFSTOPPED(status) ? "stopped" : "started",
 						WIFSTOPPED(status) ? WSTOPSIG(status) : SIGCONT) == -1)
 					strerr_die2sys(111, FATAL, "unable to write to descriptor 2: ");
+				if (substdio_flush(subfderr) == -1)
+					strerr_die2sys(111, FATAL, "unable to write to descriptor 2: ");
 				continue;
 			}
 			if (subprintf(subfderr, "%s: %-10s pid %10d %s by signal %d command[",
@@ -121,6 +123,8 @@ sigchld_reaper(char *ident, const entry *e)
 			print_command(e);
 			if (subprintf(subfderr, "] ppid %d\n", e->ppid) == -1)
 				strerr_die2sys(111, FATAL, "grandchild: unable to write to descriptor 2: ");
+			if (substdio_flush(subfderr) == -1)
+				strerr_die2sys(111, FATAL, "unable to write to descriptor 2: ");
 			continue;
 		} else
 		if (WIFSIGNALED(status)) {
@@ -130,6 +134,8 @@ sigchld_reaper(char *ident, const entry *e)
 				if (subprintf(subfderr, "%s: %-10s pid %10d killed by signal %d\n",
 						ProgramName, ident, pid, WTERMSIG(status)) == -1)
 					strerr_die2sys(111, FATAL, "unable to write to descriptor 2: ");
+				if (substdio_flush(subfderr) == -1)
+					strerr_die2sys(111, FATAL, "unable to write to descriptor 2: ");
 				continue;
 			}
 			if (subprintf(subfderr, "%s: %-10s pid %10d killed by signal %d command[",
@@ -138,6 +144,8 @@ sigchld_reaper(char *ident, const entry *e)
 			print_command(e);
 			if (subprintf(subfderr, "] ppid %d\n", e->ppid) == -1)
 				strerr_die2sys(111, FATAL, "grandchild: unable to write to descriptor 2: ");
+			if (substdio_flush(subfderr) == -1)
+				strerr_die2sys(111, FATAL, "unable to write to descriptor 2: ");
 		} else
 		if (WIFEXITED(status)) {
 			if (!verbose)
@@ -145,6 +153,8 @@ sigchld_reaper(char *ident, const entry *e)
 			if (!e) {
 				if (subprintf(subfderr, "%s: %-10s pid %10d: normal exit return status %d\n",
 						ProgramName, ident, pid, WEXITSTATUS(status)) == -1)
+					strerr_die2sys(111, FATAL, "unable to write to descriptor 2: ");
+				if (substdio_flush(subfderr) == -1)
 					strerr_die2sys(111, FATAL, "unable to write to descriptor 2: ");
 				continue;
 			}
@@ -154,6 +164,8 @@ sigchld_reaper(char *ident, const entry *e)
 			print_command(e);
 			if (subprintf(subfderr, "] ppid %d\n", e->ppid) == -1)
 				strerr_die2sys(111, FATAL, "grandchild: unable to write to descriptor 2: ");
+			if (substdio_flush(subfderr) == -1)
+				strerr_die2sys(111, FATAL, "unable to write to descriptor 2: ");
 		}
 	} /*- for (; pid = waitpid(-1, &status, WNOHANG | WUNTRACED);) -*/
 	if (verbose && substdio_flush(subfderr) == -1)
@@ -541,7 +553,7 @@ child_process(entry *e, const user *u)
 				fprintf(mail, "Subject: svcron <%s@%s> %s\n", usernm, first_word(hostname, "."), e->cmd);
 #ifdef MAIL_DATE
 				fprintf(mail, "Date: %s\n", arpadate(&StartTime));
-#endif							/*MAIL_DATE */
+#endif /*MAIL_DATE */
 				for (env = e->envp; *env; env++)
 					fprintf(mail, "X-Cron-Env: <%s>\n", *env);
 				fprintf(mail, "\n");
@@ -625,6 +637,9 @@ getversion_do_command_c()
 
 /*-
  * $Log: do_command.c,v $
+ * Revision 1.4  2026-07-07 17:43:13+05:30  Cprogrammer
+ * added error messages
+ *
  * Revision 1.3  2025-01-22 17:57:24+05:30  Cprogrammer
  * fixes for gcc14 errors
  *

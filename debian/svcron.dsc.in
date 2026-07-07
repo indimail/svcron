@@ -5,7 +5,7 @@ Priority: extra
 Binary: svcron
 Architecture: any
 Version: @version@-@release@
-Maintainer: Manvendra Bhangui <manvendra@indimail.org>
+Maintainer: Manvendra Bhangui <svcron@indimail.org>
 Homepage: http://www.indimail.org
 Debtransform-Release: 1
 Debtransform-Files-Tar: debian.tar.gz

@@ -32,7 +32,7 @@
 #include "cron.h"
 
 #if !defined(lint) && !defined(LINT)
-static char     rcsid[] = "$Id: svcrontab.c,v 1.2 2025-01-22 17:57:44+05:30 Cprogrammer Exp mbhangui $";
+static char     rcsid[] = "$Id: svcrontab.c,v 1.3 2025-03-03 16:24:08+05:30 Cprogrammer Exp mbhangui $";
 #endif
 
 #define FATAL "svcrontab: fatal: "
@@ -263,6 +263,7 @@ list_cmd(void)
 		if (errno == ENOENT) {
 			subprintf(subfderr, "no crontab for %s\n", User);
 			substdio_flush(subfderr);
+			return;
 		} else
 			strerr_die4sys(111, FATAL, "error opening file ", n.s, ": ");
 	}
@@ -685,6 +686,9 @@ getversion_crontab_c()
 
 /*-
  * $Log: svcrontab.c,v $
+ * Revision 1.3  2025-03-03 16:24:08+05:30  Cprogrammer
+ * fixed SIGSEGV
+ *
  * Revision 1.2  2025-01-22 17:57:44+05:30  Cprogrammer
  * fix argument to subprintf
  *

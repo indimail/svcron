@@ -14,3 +14,5 @@ Release @version@-@release@ Start 04/06/2024 End XX/XX/XXXX
 7. misc.c: fixed extra null character getting into log
 - 22/01/2025
 8. fix gcc14 errors
+- 07/07/2026
+9. Flush error messages

@@ -29,7 +29,7 @@
 #include "cron.h"
 
 #if !defined(lint) && !defined(LINT)
-static char     rcsid[] = "$Id: misc.c,v 1.2 2024-09-13 09:26:18+05:30 Cprogrammer Exp mbhangui $";
+static char     rcsid[] = "$Id: misc.c,v 1.3 2025-03-03 16:24:00+05:30 Cprogrammer Exp mbhangui $";
 #endif
 
 #define FATAL "svcron: fatal: "
@@ -514,7 +514,7 @@ log_it2(const char *username, pid_t xpid, const char *event, const char *detail)
 			strerr_die4sys(111, WARN, "can't open log file ", LOG_FILE, ": ");
 		else
 			(void) fcntl(LogFD, F_SETFD, 1);
-		strerr_warn2(WARN, "waiting for lock", 0);
+		strerr_warn2("Locking file ", LOG_FILE, 0);
 		if (lock_ex(LogFD) == -1)
 			strerr_die4sys(111, FATAL, "unable to lock ", LOG_FILE, ": ");
 	}
@@ -737,6 +737,9 @@ getversion_misc_c()
 
 /*-
  * $Log: misc.c,v $
+ * Revision 1.3  2025-03-03 16:24:00+05:30  Cprogrammer
+ * changed warning message
+ *
  * Revision 1.2  2024-09-13 09:26:18+05:30  Cprogrammer
  * fixed extra null character in log
  *
