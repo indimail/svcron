@@ -58,6 +58,36 @@ option. This allows any non-privileged user to use crontabs in their own
 directories. \fBsvcron\fR skips files starting with '.' (dot) when
 searching for crontabs.
 
+.SS Using svcron with supervise
+You can use supervise(8) to create multiple \fBsvcron\fR services to
+implement forever-up cron services that reads specific set of cron entries.
+A typical run file whould be as below. Let us say you want to have a job
+named \fBdrsync\fR, running every 5 minutes, the command
+\fI/usr/bin/drsync\fR, for a user named \fBmbhangui\fR.
+
+.EX
+# mkdir -p /service/drsync/cron
+# mkdir -p /service/drsync/log
+# chown mbhangui:mbhangui /service/drsync/cron
+
+# cat > /service/drsync/run <<EOF
+#!/bin/sh
+exec 2>&1
+exec setuidgid -es mbhangui /usr/sbin/svcron -d /service/drsync/cron
+EOF
+# chmod +x /service/drsync/run
+
+# cat > /service/drsync/log/run <<EOF
+#!/bin/sh
+exec /usr/bin/setuidgid qmaill \
+/usr/sbin/multilog t /var/log/svc/drsync
+EOF
+# chmod +x /service/drsync/log/run
+
+# svcrontab -u mbhangui -e -d /service/drsync/cron
+# chown mbhangui:mbhangui /service/drsync/cron/mbhangui
+.EE
+
 .SS Daylight Saving Time and other time changes
 Local time changes of less than three hours, such as those caused by the
 start or end of Daylight Saving Time, are handled specially. This only
