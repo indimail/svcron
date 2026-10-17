@@ -20,9 +20,7 @@
 #include <stralloc.h>
 #include "cron.h"
 
-#if !defined(lint) && !defined(LINT)
-static char     rcsid[] = "$Id: database.c,v 1.2 2024-06-12 23:58:18+05:30 Cprogrammer Exp mbhangui $";
-#endif
+static char     rcsid[] = "$Id: database.c,v 1.3 2026-10-17 18:30:43+05:30 Cprogrammer Exp mbhangui $";
 
 #define FATAL "svcron: fatal: "
 #define WARN  "svcron: warn: "
@@ -258,6 +256,8 @@ load_database(cron_db *old_db, char *dbdir)
 	closedir(dir);
 next:
 #ifdef SYS_CROND_DIR
+	if (dbdir)
+		goto end;
 	if (!(dir = opendir(SYS_CROND_DIR)))
 		goto end;
 	while (NULL != (dp = readdir(dir))) {
@@ -336,10 +336,14 @@ void
 getversion_database_c()
 {
 	const char     *x = rcsid;
-	x++;
+	if (x++) x--;
 }
+
 /*-
  * $Log: database.c,v $
+ * Revision 1.3  2026-10-17 18:30:43+05:30  Cprogrammer
+ * skip cron.d if -d option is provided
+ *
  * Revision 1.2  2024-06-12 23:58:18+05:30  Cprogrammer
  * darwin port
  *

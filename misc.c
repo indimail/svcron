@@ -28,9 +28,7 @@
 #include <sys/ipc.h>
 #include "cron.h"
 
-#if !defined(lint) && !defined(LINT)
-static char     rcsid[] = "$Id: misc.c,v 1.3 2025-03-03 16:24:00+05:30 Cprogrammer Exp mbhangui $";
-#endif
+static char     rcsid[] = "$Id: misc.c,v 1.4 2026-10-17 18:31:07+05:30 Cprogrammer Exp mbhangui $";
 
 #define FATAL "svcron: fatal: "
 #define WARN  "svcron: warn: "
@@ -255,9 +253,11 @@ get_lock(char **pidfile, const char *sdir, const char *dbdir)
 	if (dbdir) {
 		if (!(dir = ftok(dbdir, 1)))
 			strerr_die4sys(111, FATAL, "unable to get ftok for ", dbdir, ": ");
-		if (access(".svcron", F_OK) && mkdir(".svcron", 0700) == -1)
-			strerr_die2sys(111, FATAL, "unable to mkdir /run/svcron: ");
-		if (!qsprintf(&d, "%s/.svcron/%x.pid", run_dir, dir))
+		if (qsprintf(&d, "%s/.svcron", run_dir) == -1)
+			die_nomem(FATAL);
+		if (access(d.s, F_OK) && mkdir(d.s, 0700) == -1)
+			strerr_die4sys(111, FATAL, "unable to mkdir ", d.s, ": ");
+		if (qsprintf(&d, "%s/.svcron/%x.pid", run_dir, dir) == -1)
 			die_nomem(FATAL);
 		*pidfile = d.s;
 	}
@@ -524,9 +524,10 @@ log_it2(const char *username, pid_t xpid, const char *event, const char *detail)
 	 * everything out in one chunk and this has to be atomically appended
 	 * to the log file.
 	 */
-	qsprintf(&msg, "%s (%02d-%02d-%04d-%02d:%02d:%02d-%d) %s (%s)\n",
+	if (qsprintf(&msg, "%s (%02d-%02d-%04d-%02d:%02d:%02d-%d) %s (%s)\n",
 			username, t->tm_mday, t->tm_mon+1, t->tm_year + 1900,
-			t->tm_hour, t->tm_min, t->tm_sec, pid, event, detail);
+			t->tm_hour, t->tm_min, t->tm_sec, pid, event, detail) == -1)
+		die_nomem(FATAL);
 
 	if (LogFD < OK || write(LogFD, msg.s, msg.len - 1) < OK) {
 		strerr_warn4(WARN, "can't write to log file ", LOG_FILE, ": ", &strerr_sys);
@@ -732,11 +733,14 @@ void
 getversion_misc_c()
 {
 	const char     *x = rcsid;
-	x++;
+	if (x++) x--;
 }
 
 /*-
  * $Log: misc.c,v $
+ * Revision 1.4  2026-10-17 18:31:07+05:30  Cprogrammer
+ * skip cron.d if -d option is provided
+ *
  * Revision 1.3  2025-03-03 16:24:00+05:30  Cprogrammer
  * changed warning message
  *
