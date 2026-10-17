@@ -27,9 +27,7 @@
 #define FATAL "svcron: fatal: "
 #define WARN  "svcron: warn: "
 
-#if !defined(lint) && !defined(LINT)
-static char     rcsid[] = "$Id: do_command.c,v 1.4 2026-07-07 17:43:13+05:30 Cprogrammer Exp mbhangui $";
-#endif
+static char     rcsid[] = "$Id: do_command.c,v 1.5 2026-10-17 16:37:27+05:30 Cprogrammer Exp mbhangui $";
 
 static void     child_process(entry *, const user *);
 static int      safe_p(const char *, const char *);
@@ -632,11 +630,14 @@ void
 getversion_do_command_c()
 {
 	const char *x = rcsid;
-	x++;
+	if (x++) x--;
 }
 
 /*-
  * $Log: do_command.c,v $
+ * Revision 1.5  2026-10-17 16:37:27+05:30  Cprogrammer
+ * fixed compiler warning
+ *
  * Revision 1.4  2026-07-07 17:43:13+05:30  Cprogrammer
  * added error messages
  *

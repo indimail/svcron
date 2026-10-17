@@ -43,13 +43,11 @@
 #include <substdio.h>
 #include "cron.h"
 
-#ifndef lint
 #if 0
 static          sccsid[] = "@(#)popen.c	8.3 (Berkeley) 4/6/94";
 #else
-static char     rcsid[] = "$Id: popen.c,v 1.2 2026-07-07 17:43:25+05:30 Cprogrammer Exp mbhangui $";
+static char     rcsid[] = "$Id: popen.c,v 1.3 2026-10-17 16:39:10+05:30 Cprogrammer Exp mbhangui $";
 #endif
-#endif /* not lint */
 
 #define FATAL "svcron: fatal: "
 #define WARN  "svcron: warn: "
@@ -215,11 +213,14 @@ void
 getversion_popen_c()
 {
 	const char     *x = rcsid;
-	x++;
+	if (x++) x--;
 }
 
 /*-
  * $Log: popen.c,v $
+ * Revision 1.3  2026-10-17 16:39:10+05:30  Cprogrammer
+ * fixed compiler warning
+ *
  * Revision 1.2  2026-07-07 17:43:25+05:30  Cprogrammer
  * flush error messages
  *

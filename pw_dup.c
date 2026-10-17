@@ -38,9 +38,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#if !defined(lint) && !defined(LINT)
-static char rcsid[] = "$Id: pw_dup.c,v 1.1 2024-06-09 01:04:25+05:30 Cprogrammer Exp mbhangui $";
-#endif
+static char rcsid[] = "$Id: pw_dup.c,v 1.2 2026-10-17 16:39:26+05:30 Cprogrammer Exp mbhangui $";
 
 struct passwd *
 pw_dup(const struct passwd *pw) {
@@ -130,11 +128,14 @@ void
 getversion_pw_dup_c()
 {
 	const char *x = rcsid;
-	x++;
+	if (x++) x--;
 }
 
 /*-
  * $Log: pw_dup.c,v $
+ * Revision 1.2  2026-10-17 16:39:26+05:30  Cprogrammer
+ * fixed compiler warning
+ *
  * Revision 1.1  2024-06-09 01:04:25+05:30  Cprogrammer
  * Initial revision
  *

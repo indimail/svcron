@@ -28,9 +28,7 @@
 #include <subfd.h>
 #include "cron.h"
 
-#if !defined(lint) && !defined(LINT)
-static char     rcsid[] = "$Id: svcron.c,v 1.4 2024-06-23 23:51:04+05:30 Cprogrammer Exp mbhangui $";
-#endif
+static char     rcsid[] = "$Id: svcron.c,v 1.5 2026-10-17 16:39:49+05:30 Cprogrammer Exp mbhangui $";
 
 enum timejump { negative, small, medium, large };
 
@@ -399,11 +397,14 @@ void
 getversion_svcron_c()
 {
 	const char *x = rcsid;
-	x++;
+	if (x++) x--;
 }
 
 /*-
  * $Log: svcron.c,v $
+ * Revision 1.5  2026-10-17 16:39:49+05:30  Cprogrammer
+ * fixed compiler warning
+ *
  * Revision 1.4  2024-06-23 23:51:04+05:30  Cprogrammer
  * added entry argument to sigchld_reaper function
  *

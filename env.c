@@ -19,9 +19,7 @@
 #include <stralloc.h>
 #include "cron.h"
 
-#if !defined(lint) && !defined(LINT)
-static char     rcsid[] = "$Id: env.c,v 1.1 2024-06-09 01:04:17+05:30 Cprogrammer Exp mbhangui $";
-#endif
+static char     rcsid[] = "$Id: env.c,v 1.2 2026-10-17 16:38:28+05:30 Cprogrammer Exp mbhangui $";
 
 char          **
 myenv_init(void)
@@ -260,11 +258,14 @@ void
 getversion_env_c()
 {
 	const char     *x = rcsid;
-	x++;
+	if (x++) x--;
 }
 
 /*-
  * $Log: env.c,v $
+ * Revision 1.2  2026-10-17 16:38:28+05:30  Cprogrammer
+ * fixed compiler warning
+ *
  * Revision 1.1  2024-06-09 01:04:17+05:30  Cprogrammer
  * Initial revision
  *

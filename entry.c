@@ -25,9 +25,7 @@
 #include <stralloc.h>
 #include "cron.h"
 
-#if !defined(lint) && !defined(LINT)
-static char     rcsid[] = "$Id: entry.c,v 1.3 2024-09-12 18:48:25+05:30 Cprogrammer Exp mbhangui $";
-#endif
+static char     rcsid[] = "$Id: entry.c,v 1.4 2026-10-17 16:38:13+05:30 Cprogrammer Exp mbhangui $";
 
 typedef enum ecode {
 	e_none, e_minute, e_hour, e_dom, e_month, e_dow,
@@ -610,11 +608,14 @@ void
 getversion_entry_c()
 {
 	const char     *x = rcsid;
-	x++;
+	if (x++) x--;
 }
 
 /*
  * $Log: entry.c,v $
+ * Revision 1.4  2026-10-17 16:38:13+05:30  Cprogrammer
+ * fixed compiler warning
+ *
  * Revision 1.3  2024-09-12 18:48:25+05:30  Cprogrammer
  * Fix CVE-2024-43688, buffer underflow for very large step values
  *

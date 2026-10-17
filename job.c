@@ -18,9 +18,7 @@
 
 #include "cron.h"
 
-#if !defined(lint) && !defined(LINT)
-static char     rcsid[] = "$Id: job.c,v 1.2 2024-06-23 23:50:14+05:30 Cprogrammer Exp mbhangui $";
-#endif
+static char     rcsid[] = "$Id: job.c,v 1.3 2026-10-17 16:38:40+05:30 Cprogrammer Exp mbhangui $";
 
 typedef struct _job {
 	struct _job    *next;
@@ -75,11 +73,14 @@ void
 getversion_job_c()
 {
 	const char *x = rcsid;
-	x++;
+	if (x++) x--;
 }
 
 /*
  * $Log: job.c,v $
+ * Revision 1.3  2026-10-17 16:38:40+05:30  Cprogrammer
+ * fixed compiler warning
+ *
  * Revision 1.2  2024-06-23 23:50:14+05:30  Cprogrammer
  * added entry argument to job_add function
  *

@@ -18,9 +18,7 @@
 
 #include "cron.h"
 
-#if !defined(lint) && !defined(LINT)
-static char     rcsid[] = "$Id: user.c,v 1.2 2024-06-12 23:58:55+05:30 Cprogrammer Exp mbhangui $";
-#endif
+static char     rcsid[] = "$Id: user.c,v 1.3 2026-10-17 16:40:12+05:30 Cprogrammer Exp mbhangui $";
 
 void
 free_user(user *u)
@@ -108,11 +106,14 @@ void
 getversion_user_c()
 {
 	const char     *x = rcsid;
-	x++;
+	if (x++) x--;
 }
 
 /*-
  * $Log: user.c,v $
+ * Revision 1.3  2026-10-17 16:40:12+05:30  Cprogrammer
+ * fixed compiler warning
+ *
  * Revision 1.2  2024-06-12 23:58:55+05:30  Cprogrammer
  * removed redundant code
  *

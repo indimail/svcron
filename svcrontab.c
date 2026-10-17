@@ -31,9 +31,7 @@
 #include <getln.h>
 #include "cron.h"
 
-#if !defined(lint) && !defined(LINT)
-static char     rcsid[] = "$Id: svcrontab.c,v 1.3 2025-03-03 16:24:08+05:30 Cprogrammer Exp mbhangui $";
-#endif
+static char     rcsid[] = "$Id: svcrontab.c,v 1.4 2026-10-17 16:40:03+05:30 Cprogrammer Exp mbhangui $";
 
 #define FATAL "svcrontab: fatal: "
 #define WARN  "svcrontab: warn: "
@@ -681,11 +679,14 @@ void
 getversion_crontab_c()
 {
 	const char     *x = rcsid;
-	x++;
+	if (x++) x--;
 }
 
 /*-
  * $Log: svcrontab.c,v $
+ * Revision 1.4  2026-10-17 16:40:03+05:30  Cprogrammer
+ * fixed compiler warning
+ *
  * Revision 1.3  2025-03-03 16:24:08+05:30  Cprogrammer
  * fixed SIGSEGV
  *
