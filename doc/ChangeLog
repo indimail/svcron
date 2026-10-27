@@ -16,3 +16,5 @@ Release @version@-@release@ Start 04/06/2024 End XX/XX/XXXX
 8. fix gcc14 errors
 - 07/07/2026
 9. Flush error messages
+- 27/10/2027
+10. Fix for cygwin

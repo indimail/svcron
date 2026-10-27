@@ -62,8 +62,10 @@
 # include <bsd_auth.h>
 #endif /*BSD_AUTH*/
 
+#if !defined(__CYGWIN__)
 #ifndef TZNAME_ALREADY_DEFINED
 extern char *tzname[2];
+#endif
 #endif
 #define TZONE(tm) tzname[(tm).tm_isdst]
 
@@ -84,9 +86,11 @@ extern char *tzname[2];
 int	getopt(int, char * const *, const char *);
 #endif
 
+#if !defined(__CYGWIN__)
 #if (!defined(BSD) || (BSD < 199103))
 extern	char *optarg;
 extern	int optind, opterr, optopt;
+#endif
 #endif
 
 /* digital unix needs this but does not give us a way to identify it.
