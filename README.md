@@ -2,6 +2,10 @@
 
 # Vixie Cron
 
+**CodeQL Status**
+
+[![CodeQL](https://github.com/indimail/svcron/actions/workflows/codeql.yml/badge.svg)](https://github.com/indimail/svcron/actions/workflows/codeql.yml)
+
 **Cron** based on **Vixie Cron** that can load crontabs from any directory.
 
 </div>
