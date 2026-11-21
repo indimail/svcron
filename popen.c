@@ -42,11 +42,12 @@
 #include <subfd.h>
 #include <substdio.h>
 #include "cron.h"
+#include "privileges.h"
 
 #if 0
 static          sccsid[] = "@(#)popen.c	8.3 (Berkeley) 4/6/94";
 #else
-static char     rcsid[] = "$Id: popen.c,v 1.3 2026-10-17 16:39:10+05:30 Cprogrammer Exp mbhangui $";
+static char     rcsid[] = "$Id: popen.c,v 1.4 2026-11-20 22:59:03+05:30 Cprogrammer Exp mbhangui $";
 #endif
 
 #define FATAL "svcron: fatal: "
@@ -111,7 +112,11 @@ svcron_popen(char *program, char *type, struct passwd *pw, pid_t *mailpid)
 #else
 			uid1 = getuid();
 			uid2 = geteuid();
+#ifdef __CYGWIN__
+			if (uid1 != uid2 || IS_PRIVILEGED_UID(uid1) || IS_PRIVILEGED_UID(uid2)) {
+#else
 			if (uid1 != uid2 || !uid1 || !uid2) {
+#endif
 				if (setgid(pw->pw_gid) < 0 || initgroups(pw->pw_name, pw->pw_gid) < 0)
 					strerr_die4sys(111, FATAL, "unable to set groups for ", pw->pw_name, ": ");
 #if (defined(BSD)) && (BSD >= 199103)
@@ -218,6 +223,9 @@ getversion_popen_c()
 
 /*-
  * $Log: popen.c,v $
+ * Revision 1.4  2026-11-20 22:59:03+05:30  Cprogrammer
+ * CYGWIN port
+ *
  * Revision 1.3  2026-10-17 16:39:10+05:30  Cprogrammer
  * fixed compiler warning
  *

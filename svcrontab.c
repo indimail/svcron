@@ -30,8 +30,9 @@
 #include <setuserid.h>
 #include <getln.h>
 #include "cron.h"
+#include "privileges.h"
 
-static char     rcsid[] = "$Id: svcrontab.c,v 1.4 2026-10-17 16:40:03+05:30 Cprogrammer Exp mbhangui $";
+static char     rcsid[] = "$Id: svcrontab.c,v 1.5 2026-11-20 22:59:07+05:30 Cprogrammer Exp mbhangui $";
 
 #define FATAL "svcrontab: fatal: "
 #define WARN  "svcrontab: warn: "
@@ -159,7 +160,11 @@ parse_args(int argc, char *argv[], char **svdir)
 			}
 			break;
 		case 'u':
+#ifdef __CYGWIN__
+			if (!IS_PRIVILEGED_UID(MY_UID(pw))) {
+#else
 			if (MY_UID(pw) != ROOT_UID) {
+#endif
 				subprintf(subfderr, "must be privileged to use -u\n");
 				substdio_flush(subfderr);
 				_exit(100);
@@ -339,7 +344,11 @@ edit_cmd(void)
 		strerr_warn4(WARN, "mkstemp: ", Filename.s, ": ", &strerr_sys);
 		goto fatal;
 	}
+#ifdef __CYGWIN__
+	if (IS_PRIVILEGED_UID(getuid()) || getuid() != geteuid()) { /* running as root/SYSTEM or setuid */
+#else
 	if (!getuid() || getuid() != geteuid()) { /* running as root or setuid */
+#endif
 #ifdef HAVE_FCHOWN
 		if (fchown(t, MY_UID(pw), MY_GID(pw)) < 0) {
 			strnum1[fmt_ushort(strnum1, pw->pw_uid)] = 0;
@@ -611,7 +620,11 @@ replace_cmd(void)
 	}
 
 	file_uid = (getuid() == geteuid()) ? ROOT_UID : pw->pw_uid;
+#ifdef __CYGWIN__
+	if (IS_PRIVILEGED_UID(getuid()) || getuid() != geteuid()) { /* running as root/SYSTEM or setuid */
+#else
 	if (!getuid() || getuid() != geteuid()) { /* running as root or setuid */
+#endif
 #ifdef HAVE_FCHOWN
 		if (fchown(fileno(tmp), file_uid, -1) < OK) {
 			strnum[fmt_ushort(strnum, file_uid)] = 0;
@@ -684,6 +697,9 @@ getversion_crontab_c()
 
 /*-
  * $Log: svcrontab.c,v $
+ * Revision 1.5  2026-11-20 22:59:07+05:30  Cprogrammer
+ * CYGWIN port
+ *
  * Revision 1.4  2026-10-17 16:40:03+05:30  Cprogrammer
  * fixed compiler warning
  *

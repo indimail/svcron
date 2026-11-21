@@ -1,5 +1,5 @@
 /*
- * $Id: macros.h,v 1.2 2024-06-23 23:50:40+05:30 Cprogrammer Exp mbhangui $
+ * $Id: macros.h,v 1.3 2026-11-20 22:58:52+05:30 Cprogrammer Exp mbhangui $
  */
 
 /*
@@ -49,8 +49,7 @@
 #define MAX_ENVSTR  1000 /* max length of envvar=value\0 strings */
 #define MAX_TEMPSTR  100 /* obvious */
 #define MAX_UNAME     33 /* max length of username, should be overkill */
-#define ROOT_UID       0 /* don't change this, it really must be root */
-#define ROOT_USER "root" /* ditto */
+#include "privileges.h"
 
 #define PPC_NULL ((const char **) NULL)
 

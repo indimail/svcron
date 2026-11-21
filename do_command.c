@@ -24,10 +24,12 @@
 #include <qprintf.h>
 #include <error.h>
 #include "cron.h"
+#include "privileges.h"
+
 #define FATAL "svcron: fatal: "
 #define WARN  "svcron: warn: "
 
-static char     rcsid[] = "$Id: do_command.c,v 1.5 2026-10-17 16:37:27+05:30 Cprogrammer Exp mbhangui $";
+static char     rcsid[] = "$Id: do_command.c,v 1.6 2026-11-20 22:58:45+05:30 Cprogrammer Exp mbhangui $";
 
 static void     child_process(entry *, const user *);
 static int      safe_p(const char *, const char *);
@@ -336,7 +338,11 @@ child_process(entry *e, const user *u)
 #else
 		uid1 = getuid();
 		uid2 = geteuid();
+#ifdef __CYGWIN__
+		if (uid1 != uid2 || IS_PRIVILEGED_UID(uid1) || IS_PRIVILEGED_UID(uid2)) {
+#else
 		if (uid1 != uid2 || !uid1 || !uid2) {
+#endif
 			strnum[fmt_ushort(strnum, e->pwd->pw_gid)] = 0;
 			if (setgid(e->pwd->pw_gid) == -1)
 				strerr_die4sys(111, FATAL, "grandchild: setgid failed for gid ", strnum, ": ");
@@ -635,6 +641,9 @@ getversion_do_command_c()
 
 /*-
  * $Log: do_command.c,v $
+ * Revision 1.6  2026-11-20 22:58:45+05:30  Cprogrammer
+ * CYGWIN port
+ *
  * Revision 1.5  2026-10-17 16:37:27+05:30  Cprogrammer
  * fixed compiler warning
  *

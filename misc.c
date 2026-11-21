@@ -27,8 +27,9 @@
 #include <qprintf.h>
 #include <sys/ipc.h>
 #include "cron.h"
+#include "privileges.h"
 
-static char     rcsid[] = "$Id: misc.c,v 1.4 2026-10-17 18:31:07+05:30 Cprogrammer Exp mbhangui $";
+static char     rcsid[] = "$Id: misc.c,v 1.5 2026-11-20 22:58:58+05:30 Cprogrammer Exp mbhangui $";
 
 #define FATAL "svcron: fatal: "
 #define WARN  "svcron: warn: "
@@ -223,6 +224,9 @@ get_lock(char **pidfile, const char *sdir, const char *dbdir)
 	static int      fd = -1;
 	const char     *run_dir;
 	char            strnum[FMT_ULONG], buf[7];
+#ifdef __CYGWIN__
+	char            exebuf[PATH_MAX], *base;
+#endif
 	pid_t           pid;
 	int             n, fdsource;
 	key_t           dir;
@@ -307,6 +311,33 @@ get_lock(char **pidfile, const char *sdir, const char *dbdir)
 			strerr_die2sys(111, FATAL, "unable to delete lock: ");
 		return (1);
 	}
+#ifdef __CYGWIN__
+	/*- open 'exename' to get the full executable path on Cygwin */
+	if ((fd = open("exename", O_RDONLY, 0)) == -1) { /*- process is now dead */
+		if (fchdir(fdsource) == -1)
+			strerr_die4sys(111, FATAL, "unable to switch back to ", sdir, ": ");
+		close(fdsource);
+		if (unlink(*pidfile) == -1)
+			strerr_die2sys(111, FATAL, "unable to delete lock: ");
+		return (1);
+	}
+	if ((n = read(fd, exebuf, sizeof(exebuf) - 1)) <= 0) {
+		close(fd);
+		if (fchdir(fdsource) == -1)
+			strerr_die4sys(111, FATAL, "unable to switch back to ", sdir, ": ");
+		close(fdsource);
+		if (unlink(*pidfile) == -1)
+			strerr_die2sys(111, FATAL, "unable to delete lock: ");
+		return (1);
+	}
+	close(fd);
+	exebuf[n] = '\0';
+	base = (base = strrchr(exebuf, '/')) ? base + 1 : exebuf;
+	if (!strcmp(base, "svcron") || !strcmp(base, "svcron.exe")) { /*- indeed pid is svcron process */
+		strerr_warn5(FATAL, "[", base, "] ", "already running", 0);
+		_exit(111);
+	}
+#else
 	/*- open 'comm' to get the command name */
 	if ((fd = open("comm", O_RDONLY, 0)) == -1) { /*- process is now dead */
 		if (fchdir(fdsource) == -1)
@@ -326,12 +357,13 @@ get_lock(char **pidfile, const char *sdir, const char *dbdir)
 		return (1);
 	}
 	close(fd);
-	if (buf[0] == 's' && buf[1] == 'c' && buf[2] == 'h' &&
-		buf[3] == 'e' && buf[4] == 'd' && buf[5] == '\n') { /*- indeed pid is svcron process */
-		buf[5] = 0;
+	if (buf[0] == 's' && buf[1] == 'v' && buf[2] == 'c' &&
+		buf[3] == 'r' && buf[4] == 'o' && buf[5] == 'n' && buf[6] == '\n') { /*- indeed pid is svcron process */
+		buf[6] = 0;
 		strerr_warn5(FATAL, "[", buf, "] ", "already running", 0);
 		_exit (111);
 	}
+#endif
 	/*- some non-svcron process is running with pid */
 	if (fchdir(fdsource) == -1)
 		strerr_die4sys(111, FATAL, "unable to switch back to ", sdir, ": ");
@@ -470,7 +502,11 @@ allowed(const char *username, const char *allow_file, const char *deny_file)
 	FILE           *fp;
 	int             isallowed;
 
+#ifdef __CYGWIN__
+	if (strcmp(username, ROOT_USER) == 0 || strcmp(username, "Administrator") == 0)
+#else
 	if (strcmp(username, ROOT_USER) == 0)
+#endif
 		return (TRUE);
 	isallowed = FALSE;
 	if ((fp = fopen(allow_file, "r")) != NULL) {
@@ -738,6 +774,9 @@ getversion_misc_c()
 
 /*-
  * $Log: misc.c,v $
+ * Revision 1.5  2026-11-20 22:58:58+05:30  Cprogrammer
+ * CYGWIN port
+ *
  * Revision 1.4  2026-10-17 18:31:07+05:30  Cprogrammer
  * skip cron.d if -d option is provided
  *
